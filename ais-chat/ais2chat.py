@@ -9,11 +9,6 @@ import urllib.parse
 
 import settings
 
-# See instructions for running these code samples locally:
-# https://developers.google.com/explorer-help/guides/code_samples#python
-
-# SUURSAARI (Dredging or underwater ops) to HELSINKI??J(27)002PR, speed 0.0 kn 511
-
 import os
 import google_auth_oauthlib.flow
 import googleapiclient.discovery
@@ -40,6 +35,8 @@ shipReports = {}
 
 #
 
+# Utility function for calculate radius for vessel query, https://gist.github.com/rochacbruno/2883505
+
 
 def distance(origin, destination):
     lat1, lon1 = origin
@@ -54,9 +51,10 @@ def distance(origin, destination):
     d = radius * c
     return d
 
+# Send a message via YouTube API
+
 
 def send_youtube_chat_message(messageText):
-    # vaihtoehtoinen flow-versio  - https://stackoverflow.com/questions/50865584/python-google-drive-api-oauth2-save-authorization-consent-for-user
     store = file.Storage(settings.credentials_file_name)
     credentials = store.get()
     if not credentials or credentials.invalid:
@@ -87,23 +85,22 @@ def send_youtube_chat_message(messageText):
 
 def main():
 
-    x = [p[0][0] for p in boundingPoints.iter_segments()]
+    # define central point and radius for location query
+    x = [p[0][0] for p in settings.boundingPoints.iter_segments()]
     y = [p[0][1] for p in boundingPoints.iter_segments()]
 
     centroid = (sum(x) / len(boundingPoints),
                 sum(y) / len(boundingPoints))
     max_distance = 0
-
     for p in boundingPoints.iter_segments():
         max_distance = max(max_distance, distance(p[0], centroid))
 
     while True:
+        # query for vessels aound the cnetroid
         utc_datetime = datetime.utcnow() - timedelta(hours=2)
         firstdate = utc_datetime.strftime("%Y-%m-%dT%H:%M:%SZ")
-
         request_url = settings.location_query_base.format(
             centroid[1], centroid[0], max_distance, urllib.parse.quote(firstdate))
-        print(request_url)
 
         response = requests.get(request_url)
         locations = response.json()
@@ -122,7 +119,8 @@ def main():
                     since_last_report_secs = (
                         datetime.utcnow()-shipReports[mmsi]).total_seconds()
 
-            in_view = boundingPoints.contains_points([coordinates])
+            in_view = boundingPoints.contains_points(
+                [coordinates])  # is vessel inside polygon
 
             if ((in_view and (since_last_report_secs >= settings.min_ship_report_interval_secs) and (speed > settings.min_speed_to_report)) or debug_only):
                 heading = feature['properties']['heading']
