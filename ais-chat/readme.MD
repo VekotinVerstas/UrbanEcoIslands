@@ -1,1 +1,1 @@
-ais-chat
+This piece of software add vessel info to a youtube live stream chat. Gets location and more detail vessel information from Finnish AIS system (https://www.digitraffic.fi/meriliikenne/#/alusten-sijaintitiedot ) and writes info of approaching vessels to selected YouTube channel. The controlled area is defined in a polygon boundingPoints. 
