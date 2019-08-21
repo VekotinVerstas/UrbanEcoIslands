@@ -85,8 +85,10 @@ def send_youtube_chat_message(messageText):
 
 def main():
 
+    print('Program started {:s}'.format(datetime.utcnow()))
+    exit()
     # define central point and radius for location query
-    x = [p[0][0] for p in settings.boundingPoints.iter_segments()]
+    x = [p[0][0] for p in boundingPoints.iter_segments()]
     y = [p[0][1] for p in boundingPoints.iter_segments()]
 
     centroid = (sum(x) / len(boundingPoints),
@@ -102,8 +104,16 @@ def main():
         request_url = settings.location_query_base.format(
             centroid[1], centroid[0], max_distance, urllib.parse.quote(firstdate))
 
-        response = requests.get(request_url)
-        locations = response.json()
+        try:
+            response = None
+            response = requests.get(request_url)
+            locations = response.json()
+        except:
+            print('Errors in the location response:')
+            if response is not None:
+                print(response)
+            locations = dict()
+            locations['features'] = dict()
 
         if debug_only:
             print(locations)
@@ -127,43 +137,55 @@ def main():
                 vessel_request_url = settings.vessel_query_base.format(
                     str(mmsi))
 
-                shipdataresp = requests.get(vessel_request_url)
+                shipdata_ok = False
+                try:
+                    shipdataresp = None
+                    shipdataresp = requests.get(vessel_request_url)
+                    shipdata = shipdataresp.json()
+                    shipdata_ok = True
+                except:
+                    print('Errors in the shipdata response:')
+                    if shipdataresp is not None:
+                        print(shipdataresp)
 
-                shipdata = shipdataresp.json()
+                if shipdata_ok:
+                    shipnName = shipdata['name']
+                    destination = shipdata['destination']
+                    direction = 0  # RFU
+                    shipType = shipdata['shipType']
+                    if shipType in settings.shipTypes:
+                        shipTypeStr = settings.shipTypes[shipType]
+                    else:
+                        shipTypeStr = 'unknown ({:d})'.format(shipType)
 
-                shipnName = shipdata['name']
-                destination = shipdata['destination']
-                direction = 0  # RFU
-                shipType = shipdata['shipType']
-                if shipType in settings.shipTypes:
-                    shipTypeStr = settings.shipTypes[shipType]
-                else:
-                    shipTypeStr = 'unknown ({:d})'.format(shipType)
+                    heading = heading % 360  # to fix errornous headings > 360
+                    heading_round = int(45*((heading+23)//45))
+                    if heading_round in settings.directions:
+                        heading_round_str = settings.directions[heading_round]
+                    else:
+                        heading_round_str = str(heading)
+                        print('Invalid rounded heading {:d} from {:d} '.format(
+                            heading_round, heading))
 
-                heading = heading % 360  # to fix errornous headings > 360
-                heading_round = int(45*((heading+23)//45))
-                if heading_round in settings.directions:
-                    heading_round_str = settings.directions[heading_round]
-                else:
-                    heading_round_str = str(heading)
-                    print('Invalid rounded heading {:d} from {:d} '.format(
-                        heading_round, heading))
+                    msgText = '{:s} ({:s}) to {:s}, speed {:3.1f} kn {:s}/{:d} '.format(shipnName, shipTypeStr,
+                                                                                        destination, speed, heading_round_str, heading)
+                    # ° - mene läpi serialisoinnista linuxilla vaikka menee macilla
+                    # raise TypeError(repr(o) + " is not JSON serializable")
+                    # TypeError: b'VIKING XPRS (Passenger) to HELSINKI=TALLINN, speed 14.8 kn North/14\xc2\xb0 ' is not JSON serializable
 
-                msgText = '{:s} ({:s}) to {:s}, speed {:3.1f} kn {:s}/{:d} '.format(shipnName, shipTypeStr,
-                                                                                    destination, speed, heading_round_str, heading)
-                # ° - mene läpi serialisoinnista linuxilla vaikka menee macilla
-                # raise TypeError(repr(o) + " is not JSON serializable")
-                # TypeError: b'VIKING XPRS (Passenger) to HELSINKI=TALLINN, speed 14.8 kn North/14\xc2\xb0 ' is not JSON serializable
+                    print(msgText)
+                    if debug_only:
+                        print('debugging logic, not writing to YouTube')
+                    else:
+                        send_youtube_chat_message(msgText)
 
-                print(msgText)
-                if debug_only:
-                    print('debugging logic, not writing to YouTube')
-                else:
-                    send_youtube_chat_message(msgText)
+                    shipReports[mmsi] = datetime.utcnow()
 
-                shipReports[mmsi] = datetime.utcnow()
+        if ((datetime.utcnow().minute % 10) == 0):
+            print(datetime.utcnow())
+        else:
+            print('.')
 
-        print('.')
         time.sleep(settings.update_period_secs)
 
 
