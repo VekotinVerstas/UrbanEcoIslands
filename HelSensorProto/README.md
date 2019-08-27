@@ -11,7 +11,7 @@ Tausta-ajatuksia:
 - Kullekin taskille määritetään dynaamisesti seuraava ajoaika. Taski voi määrittää sen itsenäisesti (esim. seuraava ajo 600 sek kuluttua)
 ja myös toinen taski voi muuttaa sitä (esim. pax-counterin onnistunut luku voi laittaa lora-lähetyksen heti jonoon)
 - Loopissa taskeilla on ajojärjestys. Sensorointi alkuun ja sensoridataa hyödyntävät taskit lopuksi
-- Loopin lopussa katsotaan mikä on seuraava taskin suoritusaika ja jos ei heti perään, niin viedään deepsleepiin (huomioiden, että LoRa-viestit ehtivät lähteä ja tulla)
+- Loopin lopussa katsotaan mikä on seuraava taskin suoritusaika next_run_time[taskin_numero] ja jos ei heti perään, niin viedään deepsleepiin (huomioiden, että LoRa-viestit ehtivät lähteä ja tulla)
 - Taskit lähtökohtaisesti synkronisesia eli blokkaavat muun suorituksen, mutta LoRa-kommunikaatio voi olla erikoistapaus...tämä täytyy miettiä
 - Globaalit muuttujat, jotka säilytettävä sleeppien välillä pidetään RTC_DATA_ATTR 4k muistissa
 - Olisi hyvä saada luettuja reaaliaika LoRan paluuviestillä ja/tai avoimen wifi-yhteyden yhteydessä 
