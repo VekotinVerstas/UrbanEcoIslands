@@ -16,12 +16,6 @@ RTC_DATA_ATTR int next_run_time[MAX_TASK_COUNT];
 #endif
 
 #ifdef READ_TEMP_HUM_BME280_5_ENABLED
-/* nämä väliaikaisesti
-#include <Wire.h>
-#include <SPI.h>
-#include <Adafruit_Sensor.h>
-#include <Adafruit_BME280.h>
-*/
 
 #include <hsbme280.h>
 HSbme280 HSBME280Sensor;
