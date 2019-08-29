@@ -4,8 +4,17 @@
 #include "esp_system.h"
 
 #define MAX_TASK_COUNT 20
-// next start time of each task, initiated in startup
 
+/*
+0) pax counter wifi
+1) pax counter ble
+2) send data with LoRa
+3) send data with wifi
+4) OTA update firmware
+5) read bme280 sensor values
+6) read htu21D sensor value
+*/
+// next start time of each task, initiated in startup
 RTC_DATA_ATTR int next_run_time[MAX_TASK_COUNT];
 
 #define UNDEFINED_TIME -1
@@ -16,10 +25,15 @@ RTC_DATA_ATTR int next_run_time[MAX_TASK_COUNT];
 #endif
 
 #ifdef READ_TEMP_HUM_BME280_5_ENABLED
-
 #include <hsbme280.h>
 HSbme280 HSBME280Sensor;
 RTC_DATA_ATTR HSbme280Data HSBME280SensorData;
+#endif
+
+#ifdef READ_HTU21D_6_ENABLED
+#include <hshtu21d.h>
+HShtu21d HShtu21dSensor;
+RTC_DATA_ATTR HShtu21dData HSHTU21DSensorData;
 #endif
 
 #if defined(SEND_DATA_WIFI_3_ENABLED) || defined(OTA_UPDATE_4_ENABLED)
@@ -122,11 +136,17 @@ void loop()
 #ifdef READ_TEMP_HUM_BME280_5_ENABLED
 
   HSBME280SensorData = HSBME280Sensor.read_sensor_values();
-  Serial.printf("temperature %f, humidity %f, pressure %f\n", HSBME280SensorData.temperature, HSBME280SensorData.humidity, HSBME280SensorData.pressure);
-  //Serial.printf("temperature %f\n", HSBME280SensorData.temperature);
-
+  Serial.printf("BME280 temperature %f, humidity %f, pressure %f\n", HSBME280SensorData.temperature, HSBME280SensorData.humidity, HSBME280SensorData.pressure);
   delay(10000); // toistaiseksi näin
 #endif
+
+#ifdef READ_HTU21D_6_ENABLED
+  HSHTU21DSensorData = HShtu21dSensor.read_sensor_values();
+  Serial.printf("HTU temperature %f, humidity %f,\n", HSHTU21DSensorData.temperature, HSHTU21DSensorData.humidity);
+  delay(10000); // toistaiseksi näin
+#endif
+
+
 
 #ifdef DEVICE_SCAN_WIFI_0_ENABLED
 
