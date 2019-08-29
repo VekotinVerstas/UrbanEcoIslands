@@ -56,6 +56,13 @@ next_run_time[4] = 0;
 
 #define SCL_PIN 22
 #define SDA_PIN 21
+
+// from https://stackoverflow.com/questions/27288021/formula-to-calculate-dew-point-from-temperature-and-humidity/27289801
+float dewPoint(float humi, float temp)
+{
+  return (temp - (14.55 + 0.114 * temp) * (1 - (0.01 * humi)) - pow(((2.5 + 0.007 * temp) * (1 - (0.01 * humi))), 3) - (15.9 + 0.117 * temp) * pow((1 - (0.01 * humi)), 14));
+}
+
 //BME280 @0x76 !
 
 /* 
@@ -142,11 +149,9 @@ void loop()
 
 #ifdef READ_HTU21D_6_ENABLED
   HSHTU21DSensorData = HShtu21dSensor.read_sensor_values();
-  Serial.printf("HTU temperature %f, humidity %f,\n", HSHTU21DSensorData.temperature, HSHTU21DSensorData.humidity);
+  Serial.printf("HTU temperature %f, humidity %f, dew point %f\n", HSHTU21DSensorData.temperature, HSHTU21DSensorData.humidity, dewPoint(HSHTU21DSensorData.humidity, HSHTU21DSensorData.temperature));
   delay(10000); // toistaiseksi näin
 #endif
-
-
 
 #ifdef DEVICE_SCAN_WIFI_0_ENABLED
 
