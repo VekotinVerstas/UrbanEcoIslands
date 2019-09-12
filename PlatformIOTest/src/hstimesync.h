@@ -1,0 +1,7 @@
+
+
+class HSTimeSync
+{
+public:
+    HSTimeSync();
+};
