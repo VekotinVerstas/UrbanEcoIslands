@@ -1,6 +1,4 @@
-
-#define uint8_t byte
-
+#include <Arduino.h>
 typedef struct t_DAVIS_LORA_OUT
 {
     uint8_t msg_type; // 07
