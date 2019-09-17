@@ -1,5 +1,5 @@
 
-#include <hstimesync.h>
+#include "hstimesync.h"
 
 HSTimeSync::HSTimeSync(){
 

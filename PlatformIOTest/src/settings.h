@@ -1,14 +1,7 @@
-
 #ifndef SETTINGS_H
 #define SETTINGS_H
 
-// wifi settings
-#define AP1_SSID "FVH Public"
-#define AP1_PWD "...OpenData!!!"
-#define AP2_SSID "Feel The Nature HQ"
-#define AP2_PWD "taustalevy"
-#define AP3_SSID "Urban Eco Island"
-#define AP3_PWD "Urban2019"
+#include "identity.h"
 
 #define SLEEP_ENABLED // do we sleep in the end of loop
 
@@ -20,7 +13,9 @@
 
 #undef DEVICE_SCAN_BLE_1_ENABLED
 
-#undef SEND_DATA_LORA_2_ENABLED
+#define SEND_DATA_LORA_2_ENABLED
+const unsigned TX_INTERVAL = 180; // LoRa send interval in seconds.
+// Airtime counter https://www.loratools.nl/#/airtime
 
 #undef SEND_DATA_WIFI_3_ENABLED
 
@@ -35,4 +30,4 @@
 
 #define READ_WEATHER_DAVIS_8_ENABLED
 
-#endif
+#endif //SETTINGS_H
