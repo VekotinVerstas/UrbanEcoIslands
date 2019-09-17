@@ -273,7 +273,7 @@ void setup()
   printLocalTime();
 
 #ifdef READ_WEATHER_DAVIS_8_ENABLED
-#define SERIAL_8N1 0x800001c
+  #include "hsdavis.h"
   Serial1.begin(19200, SERIAL_8N1, 14, 13); // Davis
 #endif                                      //READ_WEATHER_DAVIS_8_ENABLED
 
@@ -415,7 +415,7 @@ void loop()
 // Kun tulee enemmän paketteja, niin koostetaan koko paketti bufferiin
 #ifdef READ_WEATHER_DAVIS_8_ENABLED
       // tähän joku sopiva konversio
-      LMIC_setTxData2(2, DavisLoraOut, sizeof(DavisLoraOut), 0);
+      LMIC_setTxData2(2, (unsigned char *)&DavisLoraOut, sizeof(DavisLoraOut), 0);
 
 #endif //READ_WEATHER_DAVIS_8_ENABLED
 
