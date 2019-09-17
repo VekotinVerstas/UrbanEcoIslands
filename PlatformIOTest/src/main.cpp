@@ -154,7 +154,7 @@ bool time_to_run_task(int task_number)
   time(&now);
   if ((next_run_time_task <= now))
   {
-    Serial.printf("Task %d was due %d secs ago (now %ld, due %ld)\n", task_number, now - next_run_time_task, now, next_run_time_task);
+    Serial.printf("Task %d was due %ld secs ago (now %ld, due %ld)\n", task_number, now - next_run_time_task, now, next_run_time_task);
     return true;
   }
   else
