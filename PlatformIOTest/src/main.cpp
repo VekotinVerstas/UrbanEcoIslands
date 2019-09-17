@@ -286,7 +286,7 @@ void setup()
     // Reset the MAC state. Session and pending data transfers will be discarded.
     LMIC_reset();
 
-    // tästä poistettu PROGMEM-juttu ...
+    // tästä poistettu PROGMEM-juttu .....
     Serial.println("NO PROGMEM");
 
     LMIC_setSession(0x1, DEVADDR, NWKSKEY, APPSKEY);
