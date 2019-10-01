@@ -2,7 +2,8 @@
 # YouTube communications
 # see also https://developers.google.com/youtube/v3/quickstart/python
 
-live_chat_id = 'ajsklajlsjalsjalsal'  # Live chat id
+#get api key from the api console https://console.developers.google.com/apis/credentials?...
+api_key="jsdjflksdjflefkjlsdjfklsdjflsjdflsdjflksdjlfs"
 api_service_name = "youtube"
 api_version = "v3"
 client_secrets_file = "client_secret.json"  # this downloaded from Google
