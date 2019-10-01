@@ -18,6 +18,7 @@ from oauth2client import file, client, tools
 
 debug_only = False  # if True only check that queries work, but do not send to youtube
 
+live_chat_id = ''
 
 # authorization
 store = file.Storage(settings.credentials_file_name)
@@ -54,7 +55,7 @@ def distance(origin, destination):
 # Send a message via YouTube API
 
 
-def send_youtube_chat_message(messageText):
+def send_youtube_chat_message(live_chat_id, messageText):
     store = file.Storage(settings.credentials_file_name)
     credentials = store.get()
     if not credentials or credentials.invalid:
@@ -63,7 +64,7 @@ def send_youtube_chat_message(messageText):
         credentials = tools.run_flow(flow, store)
 
     # tsekkaa https://www.syncwithtech.org/authorizing-google-apis/
-
+  
     youtube = googleapiclient.discovery.build(
         settings.api_service_name, settings.api_version, credentials=credentials)
 
@@ -71,7 +72,7 @@ def send_youtube_chat_message(messageText):
         part="snippet",
         body={
             "snippet": {
-                "liveChatId": settings.live_chat_id,
+                "liveChatId": live_chat_id,
                 "type": "textMessageEvent",
                 "textMessageDetails": {
                     "messageText": messageText
@@ -82,11 +83,36 @@ def send_youtube_chat_message(messageText):
     response = request.execute()
     print(response)
 
+# get live chat id based on apikey, first active broadcast
+def get_livechatid():
+    store = file.Storage(settings.credentials_file_name)
+    credentials = store.get()
+    if not credentials or credentials.invalid:
+        flow = client.flow_from_clientsecrets(
+            settings.client_secrets_file, settings.scopes)
+        credentials = tools.run_flow(flow, store)
+
+
+    youtube = googleapiclient.discovery.build(
+        settings.api_service_name, settings.api_version, credentials=credentials)
+    
+
+    request = youtube.liveBroadcasts().list(
+        part="snippet",
+        broadcastStatus="active",
+        key=settings.api_key
+    )
+    response = request.execute()
+    return (response["items"][0]["snippet"]["liveChatId"])
 
 def main():
 
-    print('Program started {:s}'.format(datetime.utcnow()))
-    exit()
+    live_chat_id = get_livechatid()
+    print ('live_chat_id [{:s}] '.format(live_chat_id))
+    send_youtube_chat_message(live_chat_id, "Starting AIS bot")
+                    
+    
+
     # define central point and radius for location query
     x = [p[0][0] for p in boundingPoints.iter_segments()]
     y = [p[0][1] for p in boundingPoints.iter_segments()]
@@ -170,14 +196,14 @@ def main():
                     msgText = '{:s} ({:s}) to {:s}, speed {:3.1f} kn {:s}/{:d} '.format(shipnName, shipTypeStr,
                                                                                         destination, speed, heading_round_str, heading)
                     # ° - mene läpi serialisoinnista linuxilla vaikka menee macilla
-                    # raise TypeError(repr(o) + " is not JSON serializable")
+                    # raise TypeError(repr(o) + " is not JSON se rializable")
                     # TypeError: b'VIKING XPRS (Passenger) to HELSINKI=TALLINN, speed 14.8 kn North/14\xc2\xb0 ' is not JSON serializable
 
                     print(msgText)
                     if debug_only:
                         print('debugging logic, not writing to YouTube')
                     else:
-                        send_youtube_chat_message(msgText)
+                        send_youtube_chat_message(live_chat_id,msgText)
 
                     shipReports[mmsi] = datetime.utcnow()
 
