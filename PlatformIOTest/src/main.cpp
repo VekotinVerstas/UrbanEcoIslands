@@ -211,7 +211,7 @@ void onEvent(ev_t ev)
     //os_setTimedCallback(&sendjob, os_getTime() + sec2osticks(TX_INTERVAL), do_send);
     Serial.printf("LoRa EV_TXCOMPLETE, next send in %d seconds\n", TX_INTERVAL);
 
-    schedule_next_task_run(2, TX_INTERVAL, true);
+    schedule_next_task_run(2, TX_INTERVAL, false);
     clear_to_sleep = true; // buffer clear, sleep ok
   }
 }
@@ -427,17 +427,17 @@ void loop()
   {
     pinMode(EXTERNAL_VOLTAGE_9_GPIO, INPUT); // setup Voltmeter
     int val1, val2, val3;
-    delay(500);
+    delay(1000);
     val1 = analogRead(EXTERNAL_VOLTAGE_9_GPIO);
     // Serial.println("Voltage val1");
     // Serial.println(val1);
-    delay(100);
+   /* delay(100);
     val2 = analogRead(EXTERNAL_VOLTAGE_9_GPIO);
     delay(100);
-    val3 = analogRead(EXTERNAL_VOLTAGE_9_GPIO);
+    val3 = analogRead(EXTERNAL_VOLTAGE_9_GPIO);*/
 
-    externalVoltage = (val1 + val2 + val3) * EXTERNAL_VOLTAGE_9_FACTOR / 3 / 4095;
-    Serial.println(externalVoltage);
+    externalVoltage = (float) (((val1) * EXTERNAL_VOLTAGE_9_FACTOR)  / 4095);
+    //Serial.println(externalVoltage);
     schedule_next_task_run(9, TX_INTERVAL, false); // same interval as lora
   }
 #endif //READ_EXTERNAL_VOLTAGE_9_ENABLED
@@ -476,8 +476,16 @@ void loop()
 
       voltageOut.msg_length = sizeof(EXTERNAL_VOLTAGE_OUT);
       voltageOut.voltage = externalVoltage;
-      //   Serial.print("Sending voltage");
-      //  Serial.println(voltageOut.voltage);
+     
+      Serial.printf("Sending voltage: %f\n",voltageOut.voltage);
+/*
+      char buffer[8];
+      memcpy( buffer, &voltageOut, 8 );
+      for (int i = 0; i < sizeof(voltageOut); i++)
+      {
+        Serial.printf("%02X", buffer[i]);
+      }   
+*/
       LMIC_setTxData2(2, (unsigned char *)&voltageOut, sizeof(voltageOut), 0);
 #endif
 
