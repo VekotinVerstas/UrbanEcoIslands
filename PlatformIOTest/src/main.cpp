@@ -3,6 +3,9 @@
 #include "settings.h"
 
 #include "esp_system.h"
+#include "esp_bt.h"
+#include "esp_bt_main.h"
+#include "esp_bt_device.h"
 
 #define MAX_TASK_COUNT 20
 
@@ -289,6 +292,9 @@ void setup()
     {
       next_run_time[i] = UNDEFINED_TIME;
     }
+    // disable ble, we do not need it (yet)
+    esp_bluedroid_disable();
+    esp_bt_controller_disable(); 
 #ifdef RESTART_10_ENABLED
     schedule_next_task_run(10, RESTART_INTERVAL, true);
 #endif
@@ -560,7 +566,7 @@ void loop()
 #ifdef SEND_DATA_LORA_2_ENABLED
       os_runloop_once();
 #endif
- Serial.printf("%ld\t %d\n",(millis() - wait_start_ms),(time_to_next_run * 1000));
+// Serial.printf("%ld\t %d\n",(millis() - wait_start_ms),(time_to_next_run * 1000));
     }
     /*
       if ((millis() - wait_start_ms) >= time_to_next_run * 1000)
