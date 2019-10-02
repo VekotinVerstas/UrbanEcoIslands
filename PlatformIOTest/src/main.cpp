@@ -87,6 +87,18 @@ HSTimeSync TimeSync;
 const char *ntpServer = "pool.ntp.org";
 #endif //SYNCRONIZE_NTP_TIME_7_ENABLED
 
+#ifdef READ_EXTERNAL_VOLTAGE_9_ENABLED
+
+typedef struct t_EXTERNAL_VOLTAGE_OUT
+{
+  uint8_t msg_type; // 09
+  uint8_t msg_length;
+  float voltage;
+} EXTERNAL_VOLTAGE_OUT;
+RTC_DATA_ATTR float externalVoltage; // result in static memory
+
+#endif
+
 //END OF TASK  SPECIFIC DEFINITIONS
 
 RTC_DATA_ATTR byte bootCount = 0;
@@ -194,8 +206,9 @@ void onEvent(ev_t ev)
   {
     // Schedule nexvt transmission
     //os_setTimedCallback(&sendjob, os_getTime() + sec2osticks(TX_INTERVAL), do_send);
-    Serial.printf("LoRa EV_TXCOMPLETE, next send in %d seconds", TX_INTERVAL);
-    schedule_next_task_run(2, TX_INTERVAL, false);
+    Serial.printf("LoRa EV_TXCOMPLETE, next send in %d seconds\n", TX_INTERVAL);
+
+    schedule_next_task_run(2, TX_INTERVAL, true);
     clear_to_sleep = true; // buffer clear, sleep ok
   }
 }
@@ -243,6 +256,7 @@ int battery_voltage; // globaali, johon luetaan voltage sopivin (?) määräväl
 
 time_t time_to_earliest_run()
 {
+  int next_task_to_run = -1;
   // loop all tasks and return earliest run time
   time_t earliest_run_time = LONG_MAX;
   for (int i = 0; i < MAX_TASK_COUNT; i++)
@@ -250,6 +264,7 @@ time_t time_to_earliest_run()
     if ((next_run_time[i] > 0) && (next_run_time[i] < earliest_run_time))
     {
       earliest_run_time = next_run_time[i];
+      next_task_to_run = i;
       //  Serial.printf("earliest_run_time task %d = %ld\n", i, earliest_run_time);
     }
   }
@@ -260,7 +275,7 @@ time_t time_to_earliest_run()
     earliest_run_time = now_l + MIN_SLEEPING_TIME_SECS;
     //  Serial.printf("earliest_run_time =MIN_SLEEPING_TIME_SECS \n");
   }
-  //Serial.printf("earliest_run_time %ld\n", earliest_run_time);
+  Serial.printf("earliest_run_time %ld, task %d\n", earliest_run_time,next_task_to_run );
   return earliest_run_time;
 }
 
@@ -268,12 +283,23 @@ void setup()
 {
   Serial.begin(115200);
   delay(20);
+  if (bootCount == 0)
+  {
+    for (int i = 0; i < MAX_TASK_COUNT; i++)
+    {
+      next_run_time[i] = UNDEFINED_TIME;
+    }
+#ifdef RESTART_10_ENABLED
+    schedule_next_task_run(10, RESTART_INTERVAL, true);
+#endif
+  }
+
   Serial.print("bootCount:");
   Serial.println(bootCount);
   printLocalTime();
 
 #ifdef READ_WEATHER_DAVIS_8_ENABLED
-  #include "hsdavis.h"
+#include "hsdavis.h"
   Serial1.begin(19200, SERIAL_8N1, 14, 13); // Davis
 #endif                                      //READ_WEATHER_DAVIS_8_ENABLED
 
@@ -286,9 +312,6 @@ void setup()
     os_init();
     // Reset the MAC state. Session and pending data transfers will be discarded.
     LMIC_reset();
-
-    // tästä poistettu PROGMEM-juttu .....
-    Serial.println("NO PROGMEM");
 
     LMIC_setSession(0x1, DEVADDR, NWKSKEY, APPSKEY);
 
@@ -315,7 +338,7 @@ void setup()
 
     // Set data rate and transmit power (note: txpow seems to be ignored by the library)
     //LMIC_setDrTxpow(DR_SF12, 14);
-    LMIC_setDrTxpow(DR_SF7, 14);
+    LMIC_setDrTxpow(DR_SF12, 14);
 
     // Start job
     //do_send(&sendjob);
@@ -391,6 +414,28 @@ void loop()
   delay(10000); // toistaiseksi näin
 #endif          //READ_HTU21D_6_ENABLED
 
+#ifdef READ_EXTERNAL_VOLTAGE_9_ENABLED
+  // EXTERNAL_VOLTAGE_9_GPIO 21
+  // EXTERNAL_VOLTAGE_9_FACTOR
+  if (time_to_run_task(9))
+  {
+    pinMode(EXTERNAL_VOLTAGE_9_GPIO, INPUT); // setup Voltmeter
+    int val1, val2, val3;
+    delay(500);
+    val1 = analogRead(EXTERNAL_VOLTAGE_9_GPIO);
+    // Serial.println("Voltage val1");
+    // Serial.println(val1);
+    delay(100);
+    val2 = analogRead(EXTERNAL_VOLTAGE_9_GPIO);
+    delay(100);
+    val3 = analogRead(EXTERNAL_VOLTAGE_9_GPIO);
+
+    externalVoltage = (val1 + val2 + val3) * EXTERNAL_VOLTAGE_9_FACTOR / 3 / 4095;
+    Serial.println(externalVoltage);
+    schedule_next_task_run(9, TX_INTERVAL, false); // same interval as lora
+  }
+#endif //READ_EXTERNAL_VOLTAGE_9_ENABLED
+
 #ifdef DEVICE_SCAN_WIFI_0_ENABLED
 
   // käynnistä pax-wifi-scan jos käynnistysaika koittanut
@@ -412,12 +457,23 @@ void loop()
     else
     {
       // Prepare upstream data transmission at the next possible time.
-// Kun tulee enemmän paketteja, niin koostetaan koko paketti bufferiin
+// TODO: Kun tulee  paketteja, niin koostetaan koko paketti bufferiin
 #ifdef READ_WEATHER_DAVIS_8_ENABLED
       // tähän joku sopiva konversio
+      //
       LMIC_setTxData2(2, (unsigned char *)&DavisLoraOut, sizeof(DavisLoraOut), 0);
 
 #endif //READ_WEATHER_DAVIS_8_ENABLED
+#ifdef READ_EXTERNAL_VOLTAGE_9_ENABLED
+      EXTERNAL_VOLTAGE_OUT voltageOut;
+      voltageOut.msg_type = 9;
+
+      voltageOut.msg_length = sizeof(EXTERNAL_VOLTAGE_OUT);
+      voltageOut.voltage = externalVoltage;
+      //   Serial.print("Sending voltage");
+      //  Serial.println(voltageOut.voltage);
+      LMIC_setTxData2(2, (unsigned char *)&voltageOut, sizeof(voltageOut), 0);
+#endif
 
       //LMIC_setTxData2(2, STATICMSG, sizeof(STATICMSG), 0);
 
@@ -450,7 +506,26 @@ void loop()
 #endif //WIFI_REQUIRED
 
 #ifdef SEND_DATA_LORA_2_ENABLED
+  // do it once anyway here
   os_runloop_once();
+#endif
+
+#ifdef RESTART_10_ENABLED
+
+  //RESTART_INTERVAL 86400
+  if (time_to_run_task(10))
+  {
+    time(&now);
+    if ((next_run_time[10] - now) < -3600 * 24 * 30)
+    {
+      // probably clock was synched from ntp, no reboot now
+      schedule_next_task_run(10, RESTART_INTERVAL, true);
+    }
+    else
+    {
+      ESP.restart();
+    }
+  }
 #endif
 
 #ifdef SLEEP_ENABLED
@@ -463,7 +538,6 @@ void loop()
     os_runloop_once();
   }
 
-  // tässä voisi vielä olla joku wait_before_sleep tyyppinen muuttuja, joka asetetaan esim. lora-viestin muodostuksen yhteydess
   if (time_to_next_run >= MIN_SLEEPING_TIME_SECS)
   {
     if (time_to_next_run > MAX_SLEEPING_TIME_SECS)
@@ -478,17 +552,24 @@ void loop()
   }
   else
   {
-    // just relax, but do not sleep
-    //tähän loran purkuluuppi myöskin
-    // tämä delay on temppi
+    // just relax, but do not   sleep
     Serial.printf("Waiting %d seconds\n", (int)time_to_next_run);
     static unsigned long wait_start_ms = millis();
-    if ((millis() - wait_start_ms) >= time_to_next_run * 1000)
+    while ((time_t)(millis() - wait_start_ms) < (time_t)(time_to_next_run * 1000))
     {
 #ifdef SEND_DATA_LORA_2_ENABLED
       os_runloop_once();
 #endif
+ Serial.printf("%ld\t %d\n",(millis() - wait_start_ms),(time_to_next_run * 1000));
     }
+    /*
+      if ((millis() - wait_start_ms) >= time_to_next_run * 1000)
+      {
+#ifdef SEND_DATA_LORA_2_ENABLED
+      os_runloop_once();
+#endif
+    }
+    */
   }
 #else // no SLEEP_ENABLED
   Serial.printf("No Sleep enable - waiting %d seconds\n", (int)time_to_next_run);

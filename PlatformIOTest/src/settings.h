@@ -4,6 +4,7 @@
 #include "identity.h"
 
 #define SLEEP_ENABLED // do we sleep in the end of loop
+#define DEBUG_ENABLED // debug print
 
 #define MIN_SLEEPING_TIME_SECS 10   // if next activity is later than this amount of secs -> do sleep, otherwise just wait loop
 #define MAX_SLEEPING_TIME_SECS 3600 // do not sleep longer than this
@@ -26,8 +27,14 @@ const unsigned TX_INTERVAL = 180; // LoRa send interval in seconds.
 
 #undef READ_HTU21D_6_ENABLED
 
-#define SYNCRONIZE_NTP_TIME_7_ENABLED
+#undef SYNCRONIZE_NTP_TIME_7_ENABLED
 
-#define READ_WEATHER_DAVIS_8_ENABLED
+#undef READ_WEATHER_DAVIS_8_ENABLED
 
+#define READ_EXTERNAL_VOLTAGE_9_ENABLED
+#define EXTERNAL_VOLTAGE_9_GPIO 34
+#define EXTERNAL_VOLTAGE_9_FACTOR 20.475
+
+#define RESTART_10_ENABLED
+#define RESTART_INTERVAL 86400
 #endif //SETTINGS_H
