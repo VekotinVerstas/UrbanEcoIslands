@@ -48,11 +48,7 @@ WiFiMulti wifiMulti;
 next_run_time[4] = 0;
 #endif //OTA_UPDATE_4_ENABLED
 
-#ifdef READ_WEATHER_DAVIS_8_ENABLED
-#include "hsdavis.h"
-HSDavis WeatherStation;
-RTC_DATA_ATTR DAVIS_LORA_OUT DavisLoraOut; // result in static memory
-#endif                                     //READ_WEATHER_DAVIS_8_ENABLED
+#include "hsdavis.h"                                    //READ_WEATHER_DAVIS_8_ENABLED
 
 #ifdef SYNCRONIZE_NTP_TIME_7_ENABLED
 #include "hstimesync.h"
