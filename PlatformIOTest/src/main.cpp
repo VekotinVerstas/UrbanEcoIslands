@@ -515,13 +515,13 @@ void loop()
     */
   }
 #else // no SLEEP_ENABLED
-  Serial.printf("No Sleep enable - waiting %d seconds\n", (int)time_to_next_run);
-  static unsigned long wait_start_ms = millis();
-  if ((millis() - wait_start_ms) >= time_to_next_run * 1000)
-  {
+  //Serial.printf("No Sleep enable - waiting %d seconds\n", (int)time_to_next_run);
+  //static unsigned long wait_start_ms = millis();
+  //if ((millis() - wait_start_ms) >= time_to_next_run * 1000)
+  //{
 #ifdef SEND_DATA_LORA_2_ENABLED
     os_runloop_once();
 #endif
-  }
+  //}
 #endif // SLEEP_ENABLED
 }
