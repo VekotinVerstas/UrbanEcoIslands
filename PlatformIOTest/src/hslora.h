@@ -5,7 +5,13 @@ void hslora_setup();
 #include <lmic.h>
 #include <hal/hal.h>
 
-void hslora_setup();
+typedef struct t_LORA_OUT
+{
+    uint8_t msg_type;
+    uint8_t msg_length;
+} LORA_OUT;
+
+RTC_DATA_ATTR static LORA_OUT LoraOut; // result in static memory
 
 bool clear_to_sleep = true; // LoRa send can prevent sleep
 
