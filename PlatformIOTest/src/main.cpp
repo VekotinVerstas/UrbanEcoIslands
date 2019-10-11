@@ -327,7 +327,7 @@ void loop()
   // mieti saisiko tästä yleisen lorabufferin kasvatuksen. Jos kaksi eri taskia kasvattaa bufferia,
   // niin miten määritellään miten kasataan bufferiin. Olisiko lora-lähetyksessä vielä iffittelyt ja datapaketin kasaaminen kustakin lukutaskista.
   // tarvittaessa
-  if (time_to_run_task(8))
+  if (time_to_run_task(read_weather_davis))
   {
     Serial.printf("Read Davis here...\n");
     // muista myös liipaista lora-lähetys tyyliin schedule_next_task_run(2, 0,true);
@@ -380,7 +380,7 @@ void loop()
 #endif //DEVICE_SCAN_WIFI_0_ENABLED
 
 #ifdef SEND_DATA_LORA_2_ENABLED
-  if (time_to_run_task(2))
+  if (time_to_run_task(send_data_lora))
   {
     Serial.println("do_send");
     // Check if there is not a current TX/RX job running
@@ -395,7 +395,7 @@ void loop()
 #ifdef READ_WEATHER_DAVIS_8_ENABLED
       // tähän joku sopiva konversio
       //
-      LMIC_setTxData2(2, (unsigned char *)&DavisLoraOut, sizeof(DavisLoraOut), 0);
+      LMIC_setTxData2(2, (unsigned char *)&LoraOut, sizeof(LoraOut), 0);
 
 #endif //READ_WEATHER_DAVIS_8_ENABLED
 #ifdef READ_EXTERNAL_VOLTAGE_9_ENABLED
@@ -455,7 +455,7 @@ void loop()
 #ifdef RESTART_10_ENABLED
 
   //RESTART_INTERVAL 86400
-  if (time_to_run_task(10))
+  if (time_to_run_task(restart))
   {
     time(&now);
     if ((next_run_time[10] - now) < -3600 * 24 * 30)

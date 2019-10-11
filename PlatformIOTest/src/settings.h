@@ -9,6 +9,20 @@
 #define MIN_SLEEPING_TIME_SECS 10   // if next activity is later than this amount of secs -> do sleep, otherwise just wait loop
 #define MAX_SLEEPING_TIME_SECS 3600 // do not sleep longer than this
 
+enum task 
+{ 
+    scan_wifi, 
+    scan_ble, 
+    send_data_lora,
+    send_data_wifi,
+    ota_update,
+    read_temp_hum_bme280,
+    syncronize_ntp_time,
+    read_weather_davis,
+    read_external_volt,
+    restart 
+};
+
 // next start time of each task is in array in non-volatile memory
 #undef DEVICE_SCAN_WIFI_0_ENABLED
 
