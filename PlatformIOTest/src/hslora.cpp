@@ -1,4 +1,28 @@
+#include <arduino.h>
+#include "tasksdefine.h"
 #include "hslora.h"
+
+extern uint8_t NWKSKEY[16];
+extern PROGMEM uint8_t APPSKEY[16];
+extern uint32_t DEVADDR;
+
+// These settings seems to work with TTGO LORA OLED
+const lmic_pinmap lmic_pins = {
+    .nss = 18,
+    .rxtx = LMIC_UNUSED_PIN,
+
+    //For board revision V1.5 use GPIO12 for LoRa RST
+    //.rst = 12,
+    //For board revision(s) newer than V1.5 use GPIO19 for LoRa RST
+    .rst = 19,
+    .dio = {26, 33, 32}};
+
+// These callbacks are only used in over-the-air activation, so they are
+// left empty here (we cannot leave them out completely unless
+// DISABLE_JOIN is set in config.h, otherwise the linker will complain).
+void os_getArtEui(u1_t *buf) {}
+void os_getDevEui(u1_t *buf) {}
+void os_getDevKey(u1_t *buf) {}
 
 void hslora_setup()
 {

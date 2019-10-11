@@ -1,11 +1,12 @@
 #include <Arduino.h>
 // tässä määritellään mitkä taskit käytössä
 #include "settings.h"
+#include "main.h"
+#include <esp_system.h>
+#include <esp_bt.h>
+#include <esp_bt_main.h>
+#include <esp_bt_device.h>
 
-#include "esp_system.h"
-#include "esp_bt.h"
-#include "esp_bt_main.h"
-#include "esp_bt_device.h"
 
 #define MAX_TASK_COUNT 20
 
@@ -70,7 +71,7 @@ RTC_DATA_ATTR float externalVoltage; // result in static memory
 #endif
 
 //END OF TASK  SPECIFIC DEFINITIONS
-
+RTC_DATA_ATTR static LORA_OUT LoraOut; // result in static memory
 RTC_DATA_ATTR byte bootCount = 0;
 RTC_DATA_ATTR time_t now;
 RTC_DATA_ATTR uint64_t Mics = 0;
