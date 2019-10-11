@@ -2,6 +2,7 @@
 #include <SPI.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BME280.h>
+#define BME280_I2C 0x76
 
 class HSbme280Data
 {

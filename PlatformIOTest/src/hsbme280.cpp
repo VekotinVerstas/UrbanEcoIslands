@@ -1,6 +1,5 @@
 
 #include <hsbme280.h>
-#include <settings.h>
 
 HSbme280::HSbme280(){
 
