@@ -33,7 +33,7 @@ int readDavis()
 #ifdef READ_WEATHER_DAVIS_8_ENABLED
     char buffer[100];
     char buf[40];
-    RDavisDATA davisData;
+    t_DavisDATA davisData;
 
     Serial1.println("LOOP 1"); // Request data from Davis
     delay(100);
@@ -48,7 +48,7 @@ int readDavis()
             Serial1.readBytes(buffer, 99);
 
             davisData.msg_type = 0;
-            davisData.msg_lenght = sizeof(RDavisDATA);
+            davisData.msg_lenght = sizeof(davisData);
             davisData.wBarometer = toUInt16(buffer, 7); /* uint16_t 7 Current barometer as (Hg / 1000)          */
             davisData.wInsideTemp = toInt16(buffer, 9);
             ;                                  /* int16_t 9 Inside Temperature as (DegF / 10)          */

@@ -3,7 +3,7 @@ int readDavis();
 #ifdef READ_WEATHER_DAVIS_8_ENABLED
 
 /* Definition of Davis LOOP data packet FULL */
-//typedef struct t_RTDATA
+//struct t_RTDATA
 //{
 //    //uint8_t yACK;           /* -1 ACK from stream                           */
 //    char cL;  /* 0  character "L"                             */
@@ -62,7 +62,7 @@ int readDavis();
 //} RTDATA;
 
 /* Definition of Davis LOOP data packet STRIPPED */
-typedef struct t_DavisDATA
+struct t_DavisDATA
 {
     uint8_t msg_type;
     uint8_t msg_lenght;
@@ -87,6 +87,6 @@ typedef struct t_DavisDATA
     /*    Voltage = ((wBattLevel * 300)/512)/100.0  */
     uint8_t yForeIcon; /* 89 Forecast Icon                             */
     uint8_t yRule;     /* 90 Forecast rule number                      */
-} RDavisDATA;
+};
 
 #endif //READ_WEATHER_DAVIS_8_ENABLED
