@@ -7,7 +7,6 @@
 #include <esp_bt_main.h>
 #include <esp_bt_device.h>
 
-
 #define MAX_TASK_COUNT 20
 
 // next start time of each task, initiated in startup
@@ -49,7 +48,7 @@ WiFiMulti wifiMulti;
 next_run_time[4] = 0;
 #endif //OTA_UPDATE_4_ENABLED
 
-#include "hsdavis.h"                                    //READ_WEATHER_DAVIS_8_ENABLED
+#include "hsdavis.h" //READ_WEATHER_DAVIS_8_ENABLED
 
 #ifdef SYNCRONIZE_NTP_TIME_7_ENABLED
 #include "hstimesync.h"
@@ -246,7 +245,7 @@ time_t time_to_earliest_run()
     earliest_run_time = now_l + MIN_SLEEPING_TIME_SECS;
     //  Serial.printf("earliest_run_time =MIN_SLEEPING_TIME_SECS \n");
   }
-  Serial.printf("earliest_run_time %ld, task %d\n", earliest_run_time,next_task_to_run );
+  Serial.printf("earliest_run_time %ld, task %d\n", earliest_run_time, next_task_to_run);
   return earliest_run_time;
 }
 
@@ -262,7 +261,7 @@ void setup()
     }
     // disable ble, we do not need it (yet)
     esp_bluedroid_disable();
-    esp_bt_controller_disable(); 
+    esp_bt_controller_disable();
 #ifdef RESTART_10_ENABLED
     schedule_next_task_run(10, RESTART_INTERVAL, true);
 #endif
@@ -277,7 +276,7 @@ void setup()
   Serial1.begin(19200, SERIAL_8N1, 14, 13); // Davis
 #endif                                      //READ_WEATHER_DAVIS_8_ENABLED
 
-hslora_setup();  // siirrä koodi omiin fileihin
+  hslora_setup(); // siirrä koodi omiin fileihin
 }
 
 void loop()
@@ -360,12 +359,12 @@ void loop()
     val1 = analogRead(EXTERNAL_VOLTAGE_9_GPIO);
     // Serial.println("Voltage val1");
     // Serial.println(val1);
-   /* delay(100);
+    /* delay(100);
     val2 = analogRead(EXTERNAL_VOLTAGE_9_GPIO);
     delay(100);
     val3 = analogRead(EXTERNAL_VOLTAGE_9_GPIO);*/
 
-    externalVoltage = (float) (((val1) * EXTERNAL_VOLTAGE_9_FACTOR)  / 4095);
+    externalVoltage = (float)(((val1)*EXTERNAL_VOLTAGE_9_FACTOR) / 4095);
     //Serial.println(externalVoltage);
     schedule_next_task_run(9, TX_INTERVAL, false); // same interval as lora
   }
@@ -405,9 +404,9 @@ void loop()
 
       voltageOut.msg_length = sizeof(EXTERNAL_VOLTAGE_OUT);
       voltageOut.voltage = externalVoltage;
-     
-      Serial.printf("Sending voltage: %f\n",voltageOut.voltage);
-/*
+
+      Serial.printf("Sending voltage: %f\n", voltageOut.voltage);
+      /*
       char buffer[8];
       memcpy( buffer, &voltageOut, 8 );
       for (int i = 0; i < sizeof(voltageOut); i++)
@@ -503,7 +502,7 @@ void loop()
 #ifdef SEND_DATA_LORA_2_ENABLED
       os_runloop_once();
 #endif
-// Serial.printf("%ld\t %d\n",(millis() - wait_start_ms),(time_to_next_run * 1000));
+      // Serial.printf("%ld\t %d\n",(millis() - wait_start_ms),(time_to_next_run * 1000));
     }
     /*
       if ((millis() - wait_start_ms) >= time_to_next_run * 1000)
@@ -520,7 +519,7 @@ void loop()
   //if ((millis() - wait_start_ms) >= time_to_next_run * 1000)
   //{
 #ifdef SEND_DATA_LORA_2_ENABLED
-    os_runloop_once();
+  os_runloop_once();
 #endif
   //}
 #endif // SLEEP_ENABLED

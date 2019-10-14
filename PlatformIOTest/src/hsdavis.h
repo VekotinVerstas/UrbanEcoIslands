@@ -89,4 +89,4 @@ typedef struct t_DavisDATA
     uint8_t yRule;     /* 90 Forecast rule number                      */
 } RDavisDATA;
 
-#endif                                     //READ_WEATHER_DAVIS_8_ENABLED
+#endif //READ_WEATHER_DAVIS_8_ENABLED

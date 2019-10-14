@@ -3,7 +3,6 @@
 #include <Arduino.h>
 #include "hsdavis.h"
 
-
 uint16_t toUInt16(char *buffer, int8_t offset)
 {
     return ((uint16_t)(buffer[offset + 1] << 8) + buffer[offset]);
