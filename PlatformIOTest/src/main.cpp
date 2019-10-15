@@ -7,11 +7,23 @@
 #include <esp_bt_main.h>
 #include <esp_bt_device.h>
 
-#define MAX_TASK_COUNT 20
+bool clear_to_sleep = true; // LoRa send can prevent sleep
+
+#ifdef SEND_DATA_LORA_2_ENABLED
+struct LORA_OUT
+{
+  uint8_t msg_type;
+  uint8_t msg_ver;
+};
+RTC_DATA_ATTR static LORA_OUT LoraOut; // result in static memory
+#endif
 
 // next start time of each task, initiated in startup
-
 RTC_DATA_ATTR time_t next_run_time[MAX_TASK_COUNT];
+RTC_DATA_ATTR byte bootCount = 0;
+RTC_DATA_ATTR time_t now;
+//RTC_DATA_ATTR uint64_t Mics = 0;
+RTC_DATA_ATTR struct tm *timeinfo;
 
 #define UNDEFINED_TIME -1
 
@@ -58,7 +70,6 @@ const char *ntpServer = "pool.ntp.org";
 #endif //SYNCRONIZE_NTP_TIME_7_ENABLED
 
 #ifdef READ_EXTERNAL_VOLTAGE_9_ENABLED
-
 typedef struct t_EXTERNAL_VOLTAGE_OUT
 {
   uint8_t msg_type; // 09
@@ -66,15 +77,7 @@ typedef struct t_EXTERNAL_VOLTAGE_OUT
   float voltage;
 } EXTERNAL_VOLTAGE_OUT;
 RTC_DATA_ATTR float externalVoltage; // result in static memory
-
 #endif
-
-//END OF TASK  SPECIFIC DEFINITIONS
-RTC_DATA_ATTR static LORA_OUT LoraOut; // result in static memory
-RTC_DATA_ATTR byte bootCount = 0;
-RTC_DATA_ATTR time_t now;
-RTC_DATA_ATTR uint64_t Mics = 0;
-RTC_DATA_ATTR struct tm *timeinfo;
 
 #ifdef WIFI_REQUIRED
 bool connectWifi()
@@ -104,6 +107,8 @@ bool connectWifi()
   return false;
 }
 #endif // WIFI_REQUIRED
+
+//END OF TASK  SPECIFIC DEFINITIONS
 
 void printLocalTime()
 {
@@ -136,13 +141,12 @@ bool time_to_run_task(int task_number)
   time(&now);
   if ((next_run_time_task <= now))
   {
-    Serial.printf("Task %d was due %ld secs ago (now %ld, due %ld)\n", task_number, now - next_run_time_task, now, next_run_time_task);
+    //Serial.printf("Task %d was due %ld secs ago (now %ld, due %ld)\n", task_number, now - next_run_time_task, now, next_run_time_task);
     return true;
   }
   else
   {
-    Serial.printf("Task %d is due after %ld secs \n", task_number, next_run_time_task - now);
-
+    //Serial.printf("Task %d is due after %ld secs \n", task_number, next_run_time_task - now);
     return false;
   }
 };
@@ -169,27 +173,6 @@ void schedule_next_task_run(int task_number, time_t to_next_run_sec, bool from_n
     }
   }
 }
-
-void onEvent(ev_t ev)
-{
-  if (ev == EV_TXCOMPLETE)
-  {
-    // Schedule nexvt transmission
-    //os_setTimedCallback(&sendjob, os_getTime() + sec2osticks(TX_INTERVAL), do_send);
-    Serial.printf("LoRa EV_TXCOMPLETE, next send in %d seconds\n", TX_INTERVAL);
-
-    schedule_next_task_run(2, TX_INTERVAL, false);
-    clear_to_sleep = true; // buffer clear, sleep ok
-  }
-}
-
-// from https://stackoverflow.com/questions/27288021/formula-to-calculate-dew-point-from-temperature-and-humidity/27289801
-float dewPoint(float humi, float temp)
-{
-  return (temp - (14.55 + 0.114 * temp) * (1 - (0.01 * humi)) - pow(((2.5 + 0.007 * temp) * (1 - (0.01 * humi))), 3) - (15.9 + 0.117 * temp) * pow((1 - (0.01 * humi)), 14));
-}
-
-//BME280 @0x76 !
 
 /* 
 yleiskysymyksiä 
@@ -218,8 +201,6 @@ set_power_switches - tämä voisi muuttaa relekytkinten asentoa sensoriarvojen p
 
 send_sensordata_lora kasaa sensoroidut datat ja lähettää paketin loralla
 send_sensordata_wifi ... wifillä
-
-
 */
 
 int battery_voltage; // globaali, johon luetaan voltage sopivin (?) määrävälein
@@ -263,7 +244,7 @@ void setup()
     esp_bluedroid_disable();
     esp_bt_controller_disable();
 #ifdef RESTART_10_ENABLED
-    schedule_next_task_run(10, RESTART_INTERVAL, true);
+    schedule_next_task_run(restart, RESTART_INTERVAL, true);
 #endif
   }
 
@@ -276,7 +257,7 @@ void setup()
   Serial1.begin(19200, SERIAL_8N1, 14, 13); // Davis
 #endif                                      //READ_WEATHER_DAVIS_8_ENABLED
 
-  hslora_setup(); // siirrä koodi omiin fileihin
+  hslora_setup();
 }
 
 void loop()
@@ -317,21 +298,17 @@ void loop()
     {
       Serial.println("Cannot connect wifi, no ntp time update");
     }
-    schedule_next_task_run(7, 120, false);
+    schedule_next_task_run(syncronize_ntp_time, 120, false);
   }
 
 #endif //SYNCRONIZE_NTP_TIME_7_ENABLED
 
 #ifdef READ_WEATHER_DAVIS_8_ENABLED
-  // tähän luku, varmaan yritetään saada omaksi luokaksi
-  // mieti saisiko tästä yleisen lorabufferin kasvatuksen. Jos kaksi eri taskia kasvattaa bufferia,
-  // niin miten määritellään miten kasataan bufferiin. Olisiko lora-lähetyksessä vielä iffittelyt ja datapaketin kasaaminen kustakin lukutaskista.
-  // tarvittaessa
   if (time_to_run_task(read_weather_davis))
   {
     Serial.printf("Read Davis here...\n");
-    // muista myös liipaista lora-lähetys tyyliin schedule_next_task_run(2, 0,true);
-    schedule_next_task_run(8, 41, false);
+    schedule_next_task_run(read_weather_davis, 60, false); //Shedule next run
+    schedule_next_task_run(send_data_lora, 0, true); //Shedule lora send
   }
 #endif //READ_WEATHER_DAVIS_8_ENABLED
 
@@ -366,7 +343,7 @@ void loop()
 
     externalVoltage = (float)(((val1)*EXTERNAL_VOLTAGE_9_FACTOR) / 4095);
     //Serial.println(externalVoltage);
-    schedule_next_task_run(9, TX_INTERVAL, false); // same interval as lora
+    schedule_next_task_run(read_external_volt, TX_INTERVAL, false); // same interval as lora
   }
 #endif //READ_EXTERNAL_VOLTAGE_9_ENABLED
 
@@ -461,7 +438,7 @@ void loop()
     if ((next_run_time[10] - now) < -3600 * 24 * 30)
     {
       // probably clock was synched from ntp, no reboot now
-      schedule_next_task_run(10, RESTART_INTERVAL, true);
+      schedule_next_task_run(restart, RESTART_INTERVAL, true);
     }
     else
     {
@@ -475,10 +452,12 @@ void loop()
   time(&now_local);
   time_t time_to_next_run = (time_to_earliest_run() - now_local);
 
+#ifdef SEND_DATA_LORA_2_ENABLED
   while (!clear_to_sleep)
   { //wait until previous send is complete
     os_runloop_once();
   }
+#endif // SEND_DATA_LORA_2_ENABLED
 
   if (time_to_next_run >= MIN_SLEEPING_TIME_SECS)
   {

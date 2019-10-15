@@ -1,21 +1,12 @@
 #include <arduino.h>
 #include "tasksdefine.h"
 #include "hslora.h"
+#include "main.h"
 
-extern uint8_t NWKSKEY[16];
-extern PROGMEM uint8_t APPSKEY[16];
-extern uint32_t DEVADDR;
+#ifdef SEND_DATA_LORA_2_ENABLED
+//const unsigned TX_INTERVAL = 180;
+//extern const unsigned TX_INTERVAL;
 
-// These settings seems to work with TTGO LORA OLED
-const lmic_pinmap lmic_pins = {
-    .nss = 18,
-    .rxtx = LMIC_UNUSED_PIN,
-
-    //For board revision V1.5 use GPIO12 for LoRa RST
-    //.rst = 12,
-    //For board revision(s) newer than V1.5 use GPIO19 for LoRa RST
-    .rst = 19,
-    .dio = {26, 33, 32}};
 
 // These callbacks are only used in over-the-air activation, so they are
 // left empty here (we cannot leave them out completely unless
@@ -23,6 +14,20 @@ const lmic_pinmap lmic_pins = {
 void os_getArtEui(u1_t *buf) {}
 void os_getDevEui(u1_t *buf) {}
 void os_getDevKey(u1_t *buf) {}
+
+void onEvent(ev_t ev)
+{
+  if (ev == EV_TXCOMPLETE)
+  {
+    // Schedule nexvt transmission
+    //os_setTimedCallback(&sendjob, os_getTime() + sec2osticks(TX_INTERVAL), do_send);
+    Serial.printf("LoRa EV_TXCOMPLETE, next send in %d seconds\n", TX_INTERVAL);
+
+    schedule_next_task_run(send_data_lora, TX_INTERVAL, false);
+    clear_to_sleep = true; // buffer clear, sleep ok
+  }
+}
+#endif //SEND_DATA_LORA_2_ENABLED
 
 void hslora_setup()
 {
@@ -66,5 +71,3 @@ void hslora_setup()
     }
     #endif //SEND_DATA_LORA_2_ENABLED
 }
-
-

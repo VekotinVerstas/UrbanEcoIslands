@@ -7,13 +7,9 @@ void hslora_setup();
 #ifdef SEND_DATA_LORA_2_ENABLED
 #include <lmic.h>
 #include <hal/hal.h>
-extern RTC_DATA_ATTR byte bootCount;
+#include "main.h"
 
-typedef struct t_LORA_OUT
-{
-    uint8_t msg_type;
-    uint8_t msg_ver;
-} LORA_OUT;
+extern const lmic_pinmap lmic_pins;
 
 //MDummy message to emulate 26 byte (AQBURK) payload ( bat counter probably has much shorter
 //static PROGMEM u1_t STATICMSG[26] = {0x24, 0x2c, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};

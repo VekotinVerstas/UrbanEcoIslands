@@ -1,7 +1,6 @@
 int readDavis();
 
 #ifdef READ_WEATHER_DAVIS_8_ENABLED
-
 /* Definition of Davis LOOP data packet FULL */
 //struct t_RTDATA
 //{
