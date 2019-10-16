@@ -245,7 +245,7 @@ void setup()
     schedule_next_task_run(restart, RESTART_INTERVAL, true);
 #endif
   }
-
+  Serial.printf("\n%s - versio: %s %s\n", name, version, __DATE__);
   Serial.print("bootCount:");
   Serial.println(bootCount);
   printLocalTime();
@@ -329,7 +329,7 @@ void loop()
   if (time_to_run_task(9))
   {
     pinMode(EXTERNAL_VOLTAGE_9_GPIO, INPUT); // setup Voltmeter
-    int val1, val2, val3;
+    int val1;
     delay(1000);
     val1 = analogRead(EXTERNAL_VOLTAGE_9_GPIO);
     // Serial.println("Voltage val1");
@@ -433,7 +433,7 @@ void loop()
   if (time_to_run_task(restart))
   {
     time(&now);
-    if ((next_run_time[10] - now) < -3600 * 24 * 30)
+    if ((next_run_time[restart] - now) < -3600 * 24 * 30)
     {
       // probably clock was synched from ntp, no reboot now
       schedule_next_task_run(restart, RESTART_INTERVAL, true);
