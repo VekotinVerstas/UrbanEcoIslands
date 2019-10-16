@@ -131,8 +131,6 @@ void updateTime(uint64_t elapsedTime)
   }
 }
 */
-#define SCL_PIN 22
-#define SDA_PIN 21
 
 bool time_to_run_task(int task_number)
 {
@@ -306,8 +304,8 @@ void loop()
 #ifdef READ_WEATHER_DAVIS_8_ENABLED
   if (time_to_run_task(read_weather_davis))
   {
-    Serial.printf("Read Davis here...\n");
-    schedule_next_task_run(read_weather_davis, 60, false); //Shedule next run
+    readDavis();
+    schedule_next_task_run(read_weather_davis, 10, false); //Shedule next run
     schedule_next_task_run(send_data_lora, 0, true); //Shedule lora send
   }
 #endif //READ_WEATHER_DAVIS_8_ENABLED

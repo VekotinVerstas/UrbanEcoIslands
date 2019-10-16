@@ -9,6 +9,9 @@
 #define MIN_SLEEPING_TIME_SECS 10   // if next activity is later than this amount of secs -> do sleep, otherwise just wait loop
 #define MAX_SLEEPING_TIME_SECS 3600 // do not sleep longer than this
 
+#define SCL_PIN 22
+#define SDA_PIN 21
+
 // next start time of each task is in array in non-volatile memory
 extern const unsigned TX_INTERVAL = 60; // LoRa send interval in seconds.
 // Airtime counter https://www.loratools.nl/#/airtime
