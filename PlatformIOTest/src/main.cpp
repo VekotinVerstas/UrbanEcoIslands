@@ -302,9 +302,9 @@ void loop()
 #ifdef READ_WEATHER_DAVIS_8_ENABLED
   if (time_to_run_task(read_weather_davis))
   {
-    readDavis();
+    // Read Davis if ok scedule lora and scedule next run anyway
+    if( readDavis() == 0 ) schedule_next_task_run(send_data_lora, 0, true);
     schedule_next_task_run(read_weather_davis, 30, false); //Shedule next run
-    //schedule_next_task_run(send_data_lora, 0, true);       //Shedule lora send
   }
 #endif //READ_WEATHER_DAVIS_8_ENABLED
 
