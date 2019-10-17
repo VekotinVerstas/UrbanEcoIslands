@@ -22,7 +22,7 @@ enum task
   read_weather_davis,
   read_external_volt,
   restart,
-  MAX_TASK_COUNT // Do not assain values manually and this must be last
+  MAX_TASK_COUNT // Do not assign values manually and this must be last
 };
 
 void schedule_next_task_run(int task_number, time_t to_next_run_sec, bool from_now);

@@ -21,9 +21,7 @@ RTC_DATA_ATTR static LORA_OUT LoraOut; // result in static memory
 // next start time of each task, initiated in startup
 RTC_DATA_ATTR time_t next_run_time[MAX_TASK_COUNT];
 RTC_DATA_ATTR byte bootCount = 0;
-RTC_DATA_ATTR time_t now;
 //RTC_DATA_ATTR uint64_t Mics = 0;
-RTC_DATA_ATTR struct tm *timeinfo;
 
 #define UNDEFINED_TIME -1
 
@@ -57,7 +55,7 @@ WiFiMulti wifiMulti;
 #ifdef OTA_UPDATE_4_ENABLED
 #include "HSOTA.H"                 // tässä viittaus tiedostoon, jossa  ota-päivitykseen liittyvät funktiot
 #define OTA_UPDATE_INTERVAL_MIN 15 // Wifi ota update is tried this often, suurin osa on turhia yrityksiä, mutta jos joku odottaa hotspot-kännykän kanssa updatea on odottavan aika pitkä. Jos tätä tarvetta ei ole voisi olla vaikka 1 vrk välein
-next_run_time[4] = 0;
+next_run_time[ota_update] = 0;
 #endif //OTA_UPDATE_4_ENABLED
 
 #include "hsdavis.h" //READ_WEATHER_DAVIS_8_ENABLED
@@ -112,7 +110,9 @@ bool connectWifi()
 
 void printLocalTime()
 {
+  time_t now;
   time(&now);
+  struct tm *timeinfo;
   timeinfo = localtime(&now);
   Serial.printf("%s\n", asctime(timeinfo));
   delay(2); // 26 bytes @ 115200 baud is less than 2 ms
@@ -134,17 +134,16 @@ void updateTime(uint64_t elapsedTime)
 
 bool time_to_run_task(int task_number)
 {
-  time_t next_run_time_task = next_run_time[task_number];
-
+  time_t now;
   time(&now);
-  if ((next_run_time_task <= now))
+  if ((next_run_time[task_number] <= now))
   {
-    //Serial.printf("Task %d was due %ld secs ago (now %ld, due %ld)\n", task_number, now - next_run_time_task, now, next_run_time_task);
+    Serial.printf("Task %d was due %ld secs ago (now %ld, due %ld)\n", task_number, now - next_run_time[task_number], now, next_run_time[task_number]);
     return true;
   }
   else
   {
-    //Serial.printf("Task %d is due after %ld secs \n", task_number, next_run_time_task - now);
+    Serial.printf("Task %d is due after %ld secs \n", task_number, next_run_time[task_number] - now);
     return false;
   }
 };
@@ -203,18 +202,17 @@ send_sensordata_wifi ... wifillä
 
 int battery_voltage; // globaali, johon luetaan voltage sopivin (?) määrävälein
 
-time_t time_to_earliest_run()
+time_t time_of_earliest_run() // loop all tasks and return earliest run time
 {
   int next_task_to_run = -1;
-  // loop all tasks and return earliest run time
+
   time_t earliest_run_time = LONG_MAX;
   for (int i = 0; i < MAX_TASK_COUNT; i++)
   {
     if ((next_run_time[i] > 0) && (next_run_time[i] < earliest_run_time))
     {
-      earliest_run_time = next_run_time[i];
+      earliest_run_time = next_run_time[i]; // This is run at time and not sec for next run. ( since EPOC or boot )
       next_task_to_run = i;
-      //  Serial.printf("earliest_run_time task %d = %ld\n", i, earliest_run_time);
     }
   }
   if (earliest_run_time == UNDEFINED_TIME)
@@ -222,7 +220,7 @@ time_t time_to_earliest_run()
     time_t now_l;
     time(&now_l);
     earliest_run_time = now_l + MIN_SLEEPING_TIME_SECS;
-    //  Serial.printf("earliest_run_time =MIN_SLEEPING_TIME_SECS \n");
+    Serial.printf("earliest_run_time =MIN_SLEEPING_TIME_SECS \n");
   }
   Serial.printf("earliest_run_time %ld, task %d\n", earliest_run_time, next_task_to_run);
   return earliest_run_time;
@@ -232,6 +230,10 @@ void setup()
 {
   Serial.begin(115200);
   delay(20);
+  Serial.printf("\n%s - versio: %s %s\n", name, version, __DATE__);
+  Serial.print("bootCount:");
+  Serial.println(bootCount);
+  printLocalTime();
   if (bootCount == 0)
   {
     for (int i = 0; i < MAX_TASK_COUNT; i++)
@@ -245,10 +247,6 @@ void setup()
     schedule_next_task_run(restart, RESTART_INTERVAL, true);
 #endif
   }
-  Serial.printf("\n%s - versio: %s %s\n", name, version, __DATE__);
-  Serial.print("bootCount:");
-  Serial.println(bootCount);
-  printLocalTime();
 
 #ifdef READ_WEATHER_DAVIS_8_ENABLED
 #include "hsdavis.h"
@@ -305,8 +303,8 @@ void loop()
   if (time_to_run_task(read_weather_davis))
   {
     readDavis();
-    schedule_next_task_run(read_weather_davis, 10, false); //Shedule next run
-    schedule_next_task_run(send_data_lora, 0, true); //Shedule lora send
+    schedule_next_task_run(read_weather_davis, 30, false); //Shedule next run
+    //schedule_next_task_run(send_data_lora, 0, true);       //Shedule lora send
   }
 #endif //READ_WEATHER_DAVIS_8_ENABLED
 
@@ -326,7 +324,7 @@ void loop()
 #ifdef READ_EXTERNAL_VOLTAGE_9_ENABLED
   // EXTERNAL_VOLTAGE_9_GPIO 21
   // EXTERNAL_VOLTAGE_9_FACTOR
-  if (time_to_run_task(9))
+  if (time_to_run_task(task::read_external_volt))
   {
     pinMode(EXTERNAL_VOLTAGE_9_GPIO, INPUT); // setup Voltmeter
     int val1;
@@ -340,7 +338,7 @@ void loop()
     val3 = analogRead(EXTERNAL_VOLTAGE_9_GPIO);*/
 
     externalVoltage = (float)(((val1)*EXTERNAL_VOLTAGE_9_FACTOR) / 4095);
-    //Serial.println(externalVoltage);
+    Serial.printf("External volttage: %.2f\n", externalVoltage);
     schedule_next_task_run(read_external_volt, TX_INTERVAL, false); // same interval as lora
   }
 #endif //READ_EXTERNAL_VOLTAGE_9_ENABLED
@@ -402,8 +400,8 @@ void loop()
 #endif //SEND_DATA_LORA_2_ENABLED
 
 #ifdef SEND_DATA_WIFI_3_ENABLED
-  //next_run_time[3] voidaan asettaa halutuksi (->0) esim. sensorin luvun yhteydessä jos halutaan lähettää heti tuore tieto wifillä
-  if (time_to_run_task(3))
+  //next_run_time[send_data_wifi] voidaan asettaa halutuksi (->0) esim. sensorin luvun yhteydessä jos halutaan lähettää heti tuore tieto wifillä
+  if (time_to_run_task(send_data_wifi))
   {
     //  tee paketti (json?) ja lähetä sensoridata wifillä
   }
@@ -432,6 +430,7 @@ void loop()
   //RESTART_INTERVAL 86400
   if (time_to_run_task(restart))
   {
+    time_t now;
     time(&now);
     if ((next_run_time[restart] - now) < -3600 * 24 * 30)
     {
@@ -445,10 +444,12 @@ void loop()
   }
 #endif
 
-#ifdef SLEEP_ENABLED
+  //These are used with or without sleep
   time_t now_local;
   time(&now_local);
-  time_t time_to_next_run = (time_to_earliest_run() - now_local);
+  time_t time_to_next_run = (time_of_earliest_run() - now_local);
+
+#ifdef SLEEP_ENABLED
 
 #ifdef SEND_DATA_LORA_2_ENABLED
   while (!clear_to_sleep)
@@ -473,31 +474,25 @@ void loop()
   {
     // just relax, but do not   sleep
     Serial.printf("Waiting %d seconds\n", (int)time_to_next_run);
-    static unsigned long wait_start_ms = millis();
-    while ((time_t)(millis() - wait_start_ms) < (time_t)(time_to_next_run * 1000))
+    unsigned long wait_start_ms = millis();
+    while ((millis() - wait_start_ms) < (time_to_next_run * 1000))
     {
 #ifdef SEND_DATA_LORA_2_ENABLED
       os_runloop_once();
 #endif
+      delay(100); // Do slicly less actively notihing ;)
       // Serial.printf("%ld\t %d\n",(millis() - wait_start_ms),(time_to_next_run * 1000));
     }
-    /*
-      if ((millis() - wait_start_ms) >= time_to_next_run * 1000)
-      {
-#ifdef SEND_DATA_LORA_2_ENABLED
-      os_runloop_once();
-#endif
-    }
-    */
   }
 #else // no SLEEP_ENABLED
-  //Serial.printf("No Sleep enable - waiting %d seconds\n", (int)time_to_next_run);
-  //static unsigned long wait_start_ms = millis();
-  //if ((millis() - wait_start_ms) >= time_to_next_run * 1000)
-  //{
+  Serial.printf("No Sleep enabled - waiting %ld seconds\n", time_to_next_run);
+  unsigned long wait_start_ms = millis();
+  while ((millis() - wait_start_ms) <= time_to_next_run * 1000)
+  {
 #ifdef SEND_DATA_LORA_2_ENABLED
-  os_runloop_once();
+    os_runloop_once();
 #endif
-  //}
+    delay(90);
+  }
 #endif // SLEEP_ENABLED
 }
