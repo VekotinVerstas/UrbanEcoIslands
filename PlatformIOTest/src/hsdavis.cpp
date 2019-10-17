@@ -24,6 +24,7 @@ int setupDavis()
 #ifdef READ_WEATHER_DAVIS_8_ENABLED
     Serial1.begin(19200, SERIAL_8N1, 14, 13); // Davis
     Serial.println("Using Serial1 for ESP to Davis communication.");
+    return (0);
 #endif
     return (-1);
 }
@@ -34,9 +35,20 @@ int readDavis()
     char buffer[100];
     char buf[40];
     t_DavisDATA davisData;
-
+    Serial.println("Reading loop1 data from Davis.");
+    Serial1.println(); // Wake up Davis
+    delay(10);
+    if (Serial1.available())
+    {
+        Serial.println("Unknow data from Davis. Dumping it to serial.");
+    }
+    while (Serial1.available())
+    { // If anything comes in Serial1
+        Serial.println(Serial1.available(), DEC);
+        Serial.write(Serial1.read()); // read it and send it out Serial (USB)
+    }
     Serial1.println("LOOP 1"); // Request data from Davis
-    delay(100);
+    delay(50);
     if (Serial1.available())
     { // If anything comes in Serial1
         delay(100);
@@ -96,14 +108,11 @@ int readDavis()
             Serial.println("*************************************");
             Serial.flush();
         }
-
-        if (Serial1.available())
-        { // If anything comes in Serial1
-            Serial.print("Serial available: ");
-            Serial.println(Serial1.available(), DEC);
-            Serial.write(Serial1.read()); // read it and send it out Serial (USB)
-        }
+        return (0);
     }
+    else
+        Serial.println("No aswer from Davis");
+
 #endif
     return (-1);
 }
