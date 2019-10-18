@@ -33,22 +33,16 @@ int readDavis()
 {
 #ifdef READ_WEATHER_DAVIS_8_ENABLED
     char buffer[100];
-    char buf[40];
     t_DavisDATA davisData;
     Serial.println("Reading loop1 data from Davis.");
     Serial1.println(); // Wake up Davis
-    delay(10);
-    if (Serial1.available())
-    {
-        Serial.println("Unknow data from Davis. Dumping it to serial.");
-    }
+    delay(100);
     while (Serial1.available())
     { // If anything comes in Serial1
-        Serial.println(Serial1.available(), DEC);
-        Serial.write(Serial1.read()); // read it and send it out Serial (USB)
+        Serial1.read(); // Dump unknown data
     }
     Serial1.println("LOOP 1"); // Request data from Davis
-    delay(50);
+    delay(100);
     if (Serial1.available())
     { // If anything comes in Serial1
         delay(100);
@@ -80,32 +74,12 @@ int readDavis()
             davisData.yForeIcon = buffer[89];             /* uint8_t 89 Forecast Icon                             */
             davisData.yRule = buffer[90];                 /* uint8_t 90 Forecast rule number                      */
 
-            sprintf(buf, "%s = %.4f\n", "Ilmanpaine", ((float)davisData.wBarometer / 1000) * 33.86389);
-            Serial.print(buf);
-
-            sprintf(buf, "%s = %u\n", "Kosteus", davisData.yOutsideHum);
-            Serial.print(buf);
-
-            sprintf(buf, "%s = %.1f\n", "Lämpö", toTemp((char *)&davisData.wOutsideTemp, 0));
-            Serial.print(buf);
-
-            sprintf(buf, "%s = %.1f\n", "Lämpö", toTemp(buffer, 12));
-            Serial.print(buf);
-
-            sprintf(buf, "%s = %u\n", "Tuulen nopeus", davisData.yWindSpeed);
-            Serial.print(buf);
-
-            /*
-            Serial.print("Wind speed: " );
-            Serial.println( rtdata.yWindSpeed, DEC );
-
-            Serial.print("AvgWind: " );
-            Serial.println( rtdata.yAvgWindSpeed, DEC );
-
-            Serial.print("Wind dir: " );
-            Serial.println( rtdata.wWindDir, DEC );
-      */
-            Serial.println("*************************************");
+            Serial.println("************************");
+            Serial.printf("%s = %.1f\n", "Lämpö", toTemp((char *)&davisData.wOutsideTemp, 0));
+            Serial.printf("%s = %.4f\n", "Ilmanpaine", ((float)davisData.wBarometer / 1000) * 33.86389);
+            Serial.printf("%s = %u\n", "Kosteus", davisData.yOutsideHum);
+            Serial.printf("%s = %u\n", "Tuulen nopeus", davisData.yWindSpeed);
+            Serial.println("************************");
             Serial.flush();
         }
         return (0);
