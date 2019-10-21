@@ -1,5 +1,7 @@
 #ifndef MAIN_H
 #define MAIN_H
+
+#include "hsdavis.h"
 extern bool clear_to_sleep; // LoRa send can prevent sleep
 extern RTC_DATA_ATTR byte bootCount;
 
@@ -26,4 +28,28 @@ enum task
 };
 
 void schedule_next_task_run(int task_number, time_t to_next_run_sec, bool from_now);
+
+#if defined SEND_DATA_LORA_2_ENABLED || defined SEND_DATA_WIFI_3_ENABLED
+struct t_EXTERNAL_VOLTAGE_OUT
+{
+  uint8_t msg_type; // 09
+  uint8_t msg_ver; // 00
+  float voltage;
+};
+
+struct DATA_OUT
+{
+#ifdef READ_WEATHER_DAVIS_8_ENABLED
+
+t_DavisDATA davisData; // Add Davis data packet
+#endif // READ_WEATHER_DAVIS_8_ENABLED
+
+#ifdef READ_EXTERNAL_VOLTAGE_9_ENABLED
+t_EXTERNAL_VOLTAGE_OUT externalVoltageData;  // Add external volltage data packet
+#endif // READ_EXTERNAL_VOLTAGE_9_ENABLE
+};
+
+extern struct DATA_OUT DataOut; // result in static memory
+#endif // defined SEND_DATA_LORA_2_ENABLED || defined SEND_DATA_WIFI_3_ENABLED
+
 #endif //main_h

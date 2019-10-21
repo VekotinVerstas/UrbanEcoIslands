@@ -8,15 +8,7 @@
 #include <esp_bt_device.h>
 
 bool clear_to_sleep = true; // LoRa send can prevent sleep
-
-#ifdef SEND_DATA_LORA_2_ENABLED
-struct LORA_OUT
-{
-  uint8_t msg_type;
-  uint8_t msg_ver;
-};
-RTC_DATA_ATTR static LORA_OUT LoraOut; // result in static memory
-#endif
+struct DATA_OUT DataOut; // result in static memory
 
 // next start time of each task, initiated in startup
 RTC_DATA_ATTR time_t next_run_time[MAX_TASK_COUNT];
@@ -68,13 +60,8 @@ const char *ntpServer = "pool.ntp.org";
 #endif //SYNCRONIZE_NTP_TIME_7_ENABLED
 
 #ifdef READ_EXTERNAL_VOLTAGE_9_ENABLED
-typedef struct t_EXTERNAL_VOLTAGE_OUT
-{
-  uint8_t msg_type; // 09
-  uint8_t msg_length;
-  float voltage;
-} EXTERNAL_VOLTAGE_OUT;
-RTC_DATA_ATTR float externalVoltage; // result in static memory
+//t_EXTERNAL_VOLTAGE_OUT externalVoltageData;
+//float externalVoltage; // result in static memory
 #endif
 
 #ifdef WIFI_REQUIRED
@@ -337,8 +324,8 @@ void loop()
     //delay(100);
     //val3 = analogRead(EXTERNAL_VOLTAGE_9_GPIO);
 
-    externalVoltage = (float)(((val1)*EXTERNAL_VOLTAGE_9_FACTOR) / 4095);
-    Serial.printf("External volttage: %.2f\n", externalVoltage);
+    DataOut.externalVoltageData.voltage = (float)(((val1)*EXTERNAL_VOLTAGE_9_FACTOR) / 4095);
+    Serial.printf("External volttage: %.2f\n", DataOut.externalVoltageData.voltage);
     schedule_next_task_run(read_external_volt, TX_INTERVAL, false); // same interval as lora
   }
 #endif //READ_EXTERNAL_VOLTAGE_9_ENABLED
@@ -369,13 +356,9 @@ void loop()
       //LMIC_setTxData2(2, (unsigned char *)&LoraOut, sizeof(LoraOut), 0);
 #endif //READ_WEATHER_DAVIS_8_ENABLED
 #ifdef READ_EXTERNAL_VOLTAGE_9_ENABLED
-      EXTERNAL_VOLTAGE_OUT voltageOut;
-      voltageOut.msg_type = 9;
-
-      voltageOut.msg_length = sizeof(EXTERNAL_VOLTAGE_OUT);
-      voltageOut.voltage = externalVoltage;
-
-      Serial.printf("Sending voltage: %f\n", voltageOut.voltage);
+      DataOut.externalVoltageData.msg_type = 9;
+      DataOut.externalVoltageData.msg_ver = 0;
+      Serial.printf("Sending voltage: %f\n", DataOut.externalVoltageData.voltage);
       /*
       char buffer[8];
       memcpy( buffer, &voltageOut, 8 );
@@ -384,7 +367,7 @@ void loop()
         Serial.printf("%02X", buffer[i]);
       }   
 */
-      LMIC_setTxData2(1, (unsigned char *)&voltageOut, sizeof(voltageOut), 0);
+      //LMIC_setTxData2(1, (unsigned char *)&externalVoltageData, sizeof(externalVoltageData), 0);
 #endif
 
       //LMIC_setTxData2(2, STATICMSG, sizeof(STATICMSG), 0);

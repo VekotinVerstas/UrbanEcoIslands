@@ -25,7 +25,12 @@ void do_send(osjob_t* j) {
     // Prepare upstream data transmission at the next possible time.
     unsigned char text[]={"test"};
     LMIC_setTxData2(1, (xref2u1_t)text, 5, 0);
-    Serial.println("do_send viesti j0nossa");
+    //LMIC_setTxData2(1, (unsigned char *)&DataOut, sizeof(DataOut), 0);
+    //Serial.write((byte*)&DataOut, sizeof(DataOut));
+    const char* dp = (const char*) &DataOut;
+    for (int i = 0; i < sizeof(DataOut); i++) Serial.printf("%02x", *dp++);
+    Serial.println();
+    Serial.println("do_send viesti jonossa");
   }
   // Next TX is scheduled after TX_COMPLETE event.
 }

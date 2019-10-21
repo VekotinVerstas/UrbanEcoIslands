@@ -1,3 +1,6 @@
+#ifndef HSDAVIS_H
+#define HSDAVIS_H
+
 int readDavis();
 
 #ifdef READ_WEATHER_DAVIS_8_ENABLED
@@ -64,7 +67,7 @@ int readDavis();
 struct t_DavisDATA
 {
     uint8_t msg_type;
-    uint8_t msg_lenght;
+    uint8_t msg_ver;
     uint16_t wBarometer;   /* 7 Current barometer as (Hg / 1000)           */
     int16_t wInsideTemp;   /* 9 Inside Temperature as (DegF / 10)          */
     uint8_t yInsideHum;    /* 11 Inside Humidity as percentage             */
@@ -87,5 +90,6 @@ struct t_DavisDATA
     uint8_t yForeIcon; /* 89 Forecast Icon                             */
     uint8_t yRule;     /* 90 Forecast rule number                      */
 };
-
 #endif //READ_WEATHER_DAVIS_8_ENABLED
+
+#endif // HSDAVIS_H
