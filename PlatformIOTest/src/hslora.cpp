@@ -22,10 +22,11 @@ void do_send(osjob_t* j) {
   if (LMIC.opmode & OP_TXRXPEND) {
     Serial.println(F("OP_TXRXPEND, not sending"));
   } else {
-    // Prepare upstream data transmission at the next possible time.
-    unsigned char text[]={"test"};
-    LMIC_setTxData2(1, (xref2u1_t)text, 5, 0);
-    //LMIC_setTxData2(1, (unsigned char *)&DataOut, sizeof(DataOut), 0);
+    //unsigned char text[]={"test"};
+    //LMIC_setTxData2(1, (xref2u1_t)text, 5, 0);
+    LMIC_setTxData2(1, (unsigned char *)&DataOut, sizeof(DataOut), 0);
+
+    // Print data to serial 
     //Serial.write((byte*)&DataOut, sizeof(DataOut));
     const char* dp = (const char*) &DataOut;
     for (int i = 0; i < sizeof(DataOut); i++) Serial.printf("%02x", *dp++);
