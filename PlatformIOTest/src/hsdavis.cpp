@@ -74,7 +74,7 @@ int readDavis()
             DataOut.davisData.wBattLevel = toUInt16(buffer, 87);  /* uint16_t 87 Console Battery Level:                   */
             DataOut.davisData.yForeIcon = buffer[89];             /* uint8_t 89 Forecast Icon                             */
             DataOut.davisData.yRule = buffer[90];                 /* uint8_t 90 Forecast rule number                      */
-
+            
             Serial.println("************************");
             Serial.printf("%s = %.1f\n", "Lämpö", toTemp((char *)&DataOut.davisData.wOutsideTemp, 0));
             Serial.printf("%s = %.4f\n", "Ilmanpaine", ((float)DataOut.davisData.wBarometer / 1000) * 33.86389);
