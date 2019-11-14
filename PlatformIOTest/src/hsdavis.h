@@ -64,6 +64,9 @@ int readDavis();
 //} RTDATA;
 
 /* Definition of Davis LOOP data packet STRIPPED */
+/*COMPLER ADDS 8bit for single 8bit struct value!!!
+ Have two 8bit values next to each to avoid fillings.
+ And make life easyer in python parser */
 struct t_DavisDATA
 {
     uint8_t msg_type;
@@ -71,12 +74,13 @@ struct t_DavisDATA
     uint16_t wBarometer;   /* 7 Current barometer as (Hg / 1000)           */
     int16_t wInsideTemp;   /* 9 Inside Temperature as (DegF / 10)          */
     uint8_t yInsideHum;    /* 11 Inside Humidity as percentage             */
+    uint8_t yOutsideHum;   /* 33 Outside Humidity                          */
     int16_t wOutsideTemp;  /* 12 Outside Temperature as (DegF / 10)        */
     uint8_t yWindSpeed;    /* 14 Wind Speed                                */
     uint8_t yAvgWindSpeed; /* 15 10-Minute Average Wind Speed              */
     uint16_t wWindDir;     /* 16 Wind Direction in degress                 */
-    uint8_t yOutsideHum;   /* 33 Outside Humidity                          */
     uint16_t wRainRate;    /* 41 Rain Rate                                 */
+    uint8_t yXmitBatt;     /* 86 Transmitter battery status                */
     uint8_t yUVLevel;      /* 43 UV Level                                  */
     uint16_t wSolarRad;    /* 44 Solar Radiation                           */
     uint16_t wStormRain;   /* 46 Total Storm Rain                          */
@@ -84,7 +88,6 @@ struct t_DavisDATA
     uint16_t wRainDay;     /* 50 Rain Today                                */
     uint16_t wRainMonth;   /* 52 Rain this Month                           */
     uint16_t wRainYear;    /* 54 Rain this Year                            */
-    uint8_t yXmitBatt;     /* 86 Transmitter battery status                */
     uint16_t wBattLevel;   /* 87 Console Battery Level:                    */
     /*    Voltage = ((wBattLevel * 300)/512)/100.0  */
     uint8_t yForeIcon; /* 89 Forecast Icon                             */
