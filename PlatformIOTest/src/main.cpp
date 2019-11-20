@@ -285,13 +285,13 @@ void loop()
 #endif //SYNCRONIZE_NTP_TIME_7_ENABLED
 
 #ifdef READ_WEATHER_DAVIS_8_ENABLED
-  if (time_to_run_task(read_weather_davis))
+/*  if (time_to_run_task(read_weather_davis))
   {
     // Read Davis
     readDavis();
     //schedule_next_task_run(send_data_lora, 0, true);
-    schedule_next_task_run(read_weather_davis, 10, false); //Shedule next run
-  }
+    schedule_next_task_run(read_weather_davis, 30, false); //Shedule next run
+  }*/
 #endif //READ_WEATHER_DAVIS_8_ENABLED
 
 #ifdef READ_TEMP_HUM_BME280_5_ENABLED
@@ -342,7 +342,6 @@ void loop()
 #ifdef SEND_DATA_LORA_2_ENABLED
   if (time_to_run_task(send_data_lora))
   {
-    Serial.println("do_send");
     // Check if there is not a current TX/RX job running
     if (LMIC.opmode & OP_TXRXPEND)
     {
@@ -353,6 +352,7 @@ void loop()
       // Prepare upstream data transmission at the next possible time.
 // TODO: Kun tulee  paketteja, niin koostetaan koko paketti bufferiin
 #ifdef READ_WEATHER_DAVIS_8_ENABLED
+    readDavis();
       //LMIC_setTxData2(2, (unsigned char *)&LoraOut, sizeof(LoraOut), 0);
 #endif //READ_WEATHER_DAVIS_8_ENABLED
 #ifdef READ_EXTERNAL_VOLTAGE_9_ENABLED
@@ -371,11 +371,14 @@ void loop()
 #endif
 
       //LMIC_setTxData2(2, STATICMSG, sizeof(STATICMSG), 0);
-
+      Serial.println("do_send");
+      do_send(&sendjob);
       Serial.println("Packet queued!");
       clear_to_sleep = false;                         // do not sleep before the message is send
-      next_run_time[task::send_data_lora] = LONG_MAX; // unschedule for now ( not to repeat send )
+      //next_run_time[task::send_data_lora] = LONG_MAX; // unschedule for now ( not to repeat send )
+      schedule_next_task_run(send_data_lora, 60, false);
     }
+
     // Next TX is scheduled after TX_COMPLETE event.
   }
 #endif //SEND_DATA_LORA_2_ENABLED
