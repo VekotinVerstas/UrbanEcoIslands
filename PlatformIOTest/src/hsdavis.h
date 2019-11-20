@@ -70,7 +70,7 @@ int readDavis();
 struct t_DavisDATA
 {
     uint8_t msg_type;
-    uint8_t msg_ver;
+    int8_t msg_ver;
     uint16_t wBarometer;   /* 7 Current barometer as (Hg / 1000)           */
     int16_t wInsideTemp;   /* 9 Inside Temperature as (DegF / 10)          */
     uint8_t yInsideHum;    /* 11 Inside Humidity as percentage             */
