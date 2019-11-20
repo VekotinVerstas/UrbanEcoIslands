@@ -1,4 +1,4 @@
-#undef fSLEEP_ENABLED // do we sleep in the end of loop
+#define SLEEP_ENABLED // do we sleep in the end of loop
 #define DEBUG_ENABLED // debug print
 #undef DEVICE_SCAN_WIFI_0_ENABLED
 #undef DEVICE_SCAN_BLE_1_ENABLED
@@ -10,4 +10,4 @@
 #undef SYNCRONIZE_NTP_TIME_7_ENABLED
 #define READ_WEATHER_DAVIS_8_ENABLED
 #undef READ_EXTERNAL_VOLTAGE_9_ENABLED
-#undef RESTART_10_ENABLED
+#define RESTART_10_ENABLED
