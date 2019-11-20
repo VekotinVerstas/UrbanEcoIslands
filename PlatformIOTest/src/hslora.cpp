@@ -75,8 +75,8 @@ void onEvent (ev_t ev) {
       }
       // Schedule next transmission
       Serial.printf("Next LoRa send in %d seconds\n", TX_INTERVAL);
-      //schedule_next_task_run(send_data_lora, TX_INTERVAL, true);
-      os_setTimedCallback(&sendjob, os_getTime() + sec2osticks(TX_INTERVAL), do_send);
+      schedule_next_task_run(send_data_lora, TX_INTERVAL, true);
+      //os_setTimedCallback(&sendjob, os_getTime() + sec2osticks(TX_INTERVAL), do_send);
       clear_to_sleep = true; // buffer clear, sleep ok
       break;
     case EV_LOST_TSYNC:
@@ -140,10 +140,15 @@ void hslora_setup()
         //LMIC_setDrTxpow(DR_SF12, 14);
         LMIC_setDrTxpow(DR_SF12, 14);
 
+    }
+    else 
+    {
         // Start job
         //do_send(&sendjob);
+        //Serial.println("Schedule first lora send!");
         //schedule_next_task_run(send_data_lora, TX_INTERVAL, false);
-        os_setTimedCallback(&sendjob, os_getTime() + sec2osticks(TX_INTERVAL), do_send);
+        //os_setTimedCallback(&sendjob, os_getTime() + sec2osticks(TX_INTERVAL), do_send);
     }
+    
     #endif //SEND_DATA_LORA_2_ENABLED
 }
