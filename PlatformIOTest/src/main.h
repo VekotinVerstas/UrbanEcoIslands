@@ -40,7 +40,6 @@ struct t_EXTERNAL_VOLTAGE_OUT
 struct DATA_OUT
 {
 #ifdef READ_WEATHER_DAVIS_8_ENABLED
-
 t_DavisDATA davisData; // Add Davis data packet
 #endif // READ_WEATHER_DAVIS_8_ENABLED
 
