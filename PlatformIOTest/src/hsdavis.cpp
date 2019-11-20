@@ -52,7 +52,7 @@ int readDavis()
             Serial1.readBytes(buffer, 1); //Read acc away
             Serial1.readBytes(buffer, 99);
 
-            DataOut.davisData.msg_type = 10;
+            DataOut.davisData.msg_type = read_weather_davis;
             DataOut.davisData.msg_ver = 0;
             DataOut.davisData.wBarometer = toUInt16(buffer, 7);   /* uint16_t 7 Current barometer as (Hg / 1000)          */
             DataOut.davisData.wInsideTemp = toInt16(buffer, 9);   /* int16_t 9 Inside Temperature as (DegF / 10)          */
@@ -86,6 +86,8 @@ int readDavis()
         return (0);
     }
     else
+        DataOut.davisData.msg_type = read_weather_davis;
+        DataOut.davisData.msg_ver = -1; // Invalid not uptodate data
         Serial.println("No aswer from Davis");
 
 #endif
