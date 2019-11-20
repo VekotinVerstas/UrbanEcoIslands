@@ -13,7 +13,7 @@
 #define SDA_PIN 21
 
 const char name[]= "Davis GW";
-const char version[]="0.5";
+const char version[]="1.0";
 // next start time of each task is in array in non-volatile memory
 extern const unsigned TX_INTERVAL = 60; // LoRa send interval in seconds.
 // Airtime counter https://www.loratools.nl/#/airtime
