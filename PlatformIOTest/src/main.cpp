@@ -376,7 +376,9 @@ void loop()
       Serial.println("Packet queued!");
       clear_to_sleep = false;                         // do not sleep before the message is send
       //next_run_time[task::send_data_lora] = LONG_MAX; // unschedule for now ( not to repeat send )
-      schedule_next_task_run(send_data_lora, 60, false);
+      /* EV_TXCOMPLETE in hslora shedules next task, but if TX fails shedule it also in here */
+      Serial.printf("Backup shedule next LoRa send in %d seconds\n", TX_INTERVAL);
+      schedule_next_task_run(send_data_lora, TX_INTERVAL, false);
     }
 
     // Next TX is scheduled after TX_COMPLETE event.
