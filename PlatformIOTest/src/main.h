@@ -2,6 +2,7 @@
 #define MAIN_H
 
 #include "hsdavis.h"
+#include "hsvictron.h"
 extern bool clear_to_sleep; // LoRa send can prevent sleep
 extern RTC_DATA_ATTR byte bootCount;
 
@@ -42,6 +43,11 @@ struct DATA_OUT
 #ifdef READ_WEATHER_DAVIS_8_ENABLED
 t_DavisDATA davisData; // Add Davis data packet
 #endif // READ_WEATHER_DAVIS_8_ENABLED
+
+#ifdef READ_VICTRON_ENABLED
+t_VictronDATA victronData;
+//victronData = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
+#endif
 
 #ifdef READ_EXTERNAL_VOLTAGE_9_ENABLED
 t_EXTERNAL_VOLTAGE_OUT externalVoltageData;  // Add external volltage data packet

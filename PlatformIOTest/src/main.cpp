@@ -355,6 +355,10 @@ void loop()
     readDavis();
       //LMIC_setTxData2(2, (unsigned char *)&LoraOut, sizeof(LoraOut), 0);
 #endif //READ_WEATHER_DAVIS_8_ENABLED
+#ifdef READ_VICTRON_ENABLED
+    readVictron();
+      //LMIC_svicetTxData2(2, (unsigned char *)&LoraOut, sizeof(LoraOut), 0);
+#endif //READ__ENABLED
 #ifdef READ_EXTERNAL_VOLTAGE_9_ENABLED
       DataOut.externalVoltageData.msg_type = 9;
       DataOut.externalVoltageData.msg_ver = 0;
