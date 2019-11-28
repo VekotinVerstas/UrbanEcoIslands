@@ -235,7 +235,12 @@ void setup()
 
 #ifdef READ_WEATHER_DAVIS_8_ENABLED
 #include "hsdavis.h"
-  Serial1.begin(19200, SERIAL_8N1, 14, 13); // Davis
+  setupDavis();
+  //Serial1.begin(19200, SERIAL_8N1, 14, 13); // Davis
+#endif                                      //READ_WEATHER_DAVIS_8_ENABLED
+#ifdef READ_VICTRON_ENABLED
+#include "hsvictron.h"
+  setupVictron();
 #endif                                      //READ_WEATHER_DAVIS_8_ENABLED
 
   hslora_setup();

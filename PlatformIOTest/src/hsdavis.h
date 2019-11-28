@@ -1,6 +1,7 @@
 #ifndef HSDAVIS_H
 #define HSDAVIS_H
 
+int setupDavis();
 int readDavis();
 
 #ifdef READ_WEATHER_DAVIS_8_ENABLED
