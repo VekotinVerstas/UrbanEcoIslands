@@ -5,7 +5,9 @@
 int setupVictron()
 {
 #ifdef READ_VICTRON_ENABLED
-    Serial1.begin(19200, SERIAL_8N1, 13, 14); // Victron
+    Serial1.begin(19200, SERIAL_8N1, 13, 2); // Victron
+    pinMode(14, OUTPUT);    // sets the digital pin 14 as output ( victron load on/off )
+    digitalWrite(14, HIGH); // Should read from eeprom 
     Serial.println("Using Serial1 for ESP to Victorn communication.");
     Serial1.setTimeout(100);
     return (0);
