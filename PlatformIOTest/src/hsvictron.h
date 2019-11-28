@@ -6,9 +6,11 @@ int setupVictron();
 int readVictron();
 
 #ifdef READ_VICTRON_ENABLED
-struct t_VictronDATA {
-  int16_t batteryVoltageRaw;
-  int16_t panelVoltageRaw;
+struct t_VictronDATA { 
+  uint8_t msg_type;
+  int8_t msg_ver;
+  //int16_t batteryVoltageRaw;
+  //int16_t panelVoltageRaw;
   float mainVoltage_V;      // mV
   float panelVoltage_VPV;   // mV
   float panelPower_PPV;     // W
