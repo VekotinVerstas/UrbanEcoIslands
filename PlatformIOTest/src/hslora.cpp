@@ -69,15 +69,35 @@ void onEvent (ev_t ev) {
       if (LMIC.txrxFlags & TXRX_ACK)
         Serial.println(F("Received ack"));
       if (LMIC.dataLen) {
+        char lora_response[30];
+        uint8_t i;
         Serial.print(F("Received "));
         Serial.print(LMIC.dataLen);
         Serial.println(F(" bytes of payload"));
-        for (int i = 0; i < LMIC.dataLen; i++) {
-          if (LMIC.frame[LMIC.dataBeg + i] < 0x10) {
-            Serial.print(F("0"));
-          }
-        Serial.print(LMIC.frame[LMIC.dataBeg + i], HEX);
+        for ( i=0 ; i < LMIC.dataLen ; i++ )
+          lora_response[i] = LMIC.frame[LMIC.dataBeg + i];
+        lora_response[i] = 0;
+
+      // send the responce to serial
+      Serial.write((uint8_t*)lora_response, strlen(lora_response));
+
+      Serial.print(F("Data: "));
+      Serial.print(lora_response);
+      Serial.print(" Received at ");
+      Serial.println(millis()/1000.00);
+      LMIC.dataLen = 0;
+
+      #ifdef READ_VICTRON_ENABLED
+      if( lora_response[0]=='o' ) {
+        digitalWrite(13, HIGH);
       }
+      else if( lora_response[0]=='f' ) {
+        digitalWrite(13, LOW);
+      }
+      else if( lora_response[0]=='r' ) {
+        ESP.restart();
+      }
+      #endif
       }
       // Schedule next transmission
       Serial.printf("Next LoRa send in %d seconds\n", TX_INTERVAL);
