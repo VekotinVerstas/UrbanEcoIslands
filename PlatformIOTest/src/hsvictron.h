@@ -2,7 +2,7 @@
 #define HSVICTORN_H
 #include "tasksdefine.h"
 
-
+int setupVictron();
 int readVictron();
 
 #ifdef READ_VICTRON_ENABLED
